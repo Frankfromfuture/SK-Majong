@@ -40,6 +40,7 @@ func _build_menu() -> void:
 	var decoration_layer := Control.new()
 	decoration_layer.name = "DecorationLayer"
 	decoration_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	decoration_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(decoration_layer)
 
 	var interact_layer := Control.new()
@@ -50,6 +51,7 @@ func _build_menu() -> void:
 	var fx_layer := Control.new()
 	fx_layer.name = "FxLayer"
 	fx_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fx_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(fx_layer)
 
 	var title_mark := Label.new()

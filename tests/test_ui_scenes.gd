@@ -15,6 +15,8 @@ func test_main_menu_exposes_english_start_and_quit_buttons() -> void:
 	assert_not_null(_find_label(scene, "Sangoku\nMahjong"))
 	assert_not_null(scene.find_child("StartRunButton", true, false))
 	assert_not_null(scene.find_child("MainTitle", true, false))
+	assert_eq(scene.find_child("DecorationLayer", true, false).mouse_filter, Control.MOUSE_FILTER_IGNORE)
+	assert_eq(scene.find_child("FxLayer", true, false).mouse_filter, Control.MOUSE_FILTER_IGNORE)
 
 
 func test_battle_scene_starts_with_thirteen_tile_cards() -> void:
@@ -30,6 +32,8 @@ func test_battle_scene_starts_with_thirteen_tile_cards() -> void:
 	assert_not_null(scene.find_child("TileCard_00", true, false))
 	assert_not_null(scene.find_child("PreviewPatternValue", true, false))
 	assert_not_null(scene.find_child("ScoreBurstLabel", true, false))
+	assert_eq(scene.find_child("BackgroundLayer", true, false).mouse_filter, Control.MOUSE_FILTER_IGNORE)
+	assert_eq(scene.find_child("FxLayer", true, false).mouse_filter, Control.MOUSE_FILTER_IGNORE)
 
 
 func test_battle_scene_can_select_sequence_and_score() -> void:

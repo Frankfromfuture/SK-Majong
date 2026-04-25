@@ -73,11 +73,13 @@ func _build_battle_ui() -> void:
 
 	var background: LayeredBackground = LayeredBackgroundScript.new()
 	background.name = "BackgroundLayer"
+	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	screen_shake_layer.add_child(background)
 
 	var decoration_layer := Control.new()
 	decoration_layer.name = "DecorationLayer"
 	decoration_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	decoration_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	screen_shake_layer.add_child(decoration_layer)
 
 	var hud_layer := Control.new()
@@ -93,6 +95,7 @@ func _build_battle_ui() -> void:
 	fx_layer = Control.new()
 	fx_layer.name = "FxLayer"
 	fx_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fx_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(fx_layer)
 
 	_build_title_cluster(decoration_layer)
