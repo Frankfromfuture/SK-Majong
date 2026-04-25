@@ -4,7 +4,7 @@
 
 # Godot mono / C#
 .mono/
-data_*/
+/data_*/
 
 # Imports and exported builds
 *.import

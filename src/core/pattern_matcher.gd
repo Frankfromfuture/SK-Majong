@@ -92,7 +92,7 @@ static func is_two_pairs(tiles: Array) -> bool:
 static func is_sanshoku_set(tiles: Array) -> bool:
 	if tiles.size() != 3:
 		return false
-	var rank := tiles[0].rank
+	var rank: int = tiles[0].rank
 	var suits := {}
 	for tile in tiles:
 		if tile.rank != rank:
@@ -193,7 +193,7 @@ static func _remove_tile_key_count(tiles: Array, key: String, count: int) -> Arr
 static func _all_same_tile(tiles: Array) -> bool:
 	if tiles.is_empty():
 		return false
-	var key := tiles[0].key()
+	var key: String = tiles[0].key()
 	for tile in tiles:
 		if tile.key() != key:
 			return false
@@ -203,7 +203,7 @@ static func _all_same_tile(tiles: Array) -> bool:
 static func _all_same_suit(tiles: Array) -> bool:
 	if tiles.is_empty():
 		return false
-	var suit := tiles[0].suit
+	var suit: int = tiles[0].suit
 	for tile in tiles:
 		if tile.suit != suit:
 			return false
