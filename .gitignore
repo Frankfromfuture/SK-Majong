@@ -1,0 +1,25 @@
+# Godot 4
+.godot/
+*.translation
+
+# Godot mono / C#
+.mono/
+data_*/
+
+# Imports and exported builds
+*.import
+export.cfg
+export_presets.cfg
+build/
+dist/
+exports/
+
+# OS/editor noise
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
