@@ -1,8 +1,12 @@
 extends Control
 
 const AnimatedButtonScript = preload("res://src/ui/animated_button.gd")
-const TileCardScript = preload("res://src/ui/tile_card.gd")
+const HudBadgeScript = preload("res://src/ui/hud_badge.gd")
+const LayeredBackgroundScript = preload("res://src/ui/layered_background.gd")
+const ModifierBadgeScript = preload("res://src/ui/modifier_badge.gd")
+const PreviewRowScript = preload("res://src/ui/preview_row.gd")
 const ScorePopupScript = preload("res://src/ui/score_popup.gd")
+const TileCardScript = preload("res://src/ui/tile_card.gd")
 
 const ENGLISH_PATTERNS := {
 	"single": "SINGLE",
@@ -21,24 +25,29 @@ const ENGLISH_PATTERNS := {
 
 var battle: BattleState
 var selected_cards: Array[TileCard] = []
-var score_label: Label
-var round_label: Label
-var target_label: Label
-var preview_pattern_label: Label
-var preview_score_label: Label
-var preview_base_label: Label
-var preview_mult_label: Label
+var round_badge: HudBadge
+var score_badge: HudBadge
+var target_badge: HudBadge
+var preview_pattern_row: PreviewRow
+var preview_base_row: PreviewRow
+var preview_mult_row: PreviewRow
+var preview_score_row: PreviewRow
+var hand_value_label: Label
+var discards_left_label: Label
 var play_button: Button
 var hand_row: HBoxContainer
 var play_area: PanelContainer
-var burst_label: Label
+var play_area_tile_row: HBoxContainer
+var score_burst_label: Label
+var multiplier_burst_label: Label
 var screen_shake_layer: Control
+var fx_layer: Control
 var _time := 0.0
 var _last_preview: Dictionary = {}
 
 
 func _ready() -> void:
-	battle = BattleState.new(320, 4242)
+	battle = BattleState.new(60000, 4242)
 	battle.hand.sort_in_place()
 	_build_battle_ui()
 	_refresh_hand()
@@ -48,7 +57,9 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_time += delta
 	if play_area != null:
-		play_area.rotation_degrees = sin(_time * 1.5) * 0.35
+		play_area.rotation_degrees = sin(_time * 1.2) * 0.25
+	if score_burst_label != null and selected_cards.is_empty():
+		score_burst_label.scale = Vector2.ONE * (1.0 + sin(_time * 2.4) * 0.015)
 
 
 func _build_battle_ui() -> void:
@@ -56,113 +67,248 @@ func _build_battle_ui() -> void:
 		child.queue_free()
 
 	screen_shake_layer = Control.new()
+	screen_shake_layer.name = "ScreenShakeLayer"
 	screen_shake_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(screen_shake_layer)
 
-	var background := ColorRect.new()
-	background.set_anchors_preset(Control.PRESET_FULL_RECT)
-	background.material = _make_battle_background_material()
+	var background: LayeredBackground = LayeredBackgroundScript.new()
+	background.name = "BackgroundLayer"
 	screen_shake_layer.add_child(background)
 
-	var top_hud := HBoxContainer.new()
-	top_hud.position = Vector2(12, 8)
-	top_hud.size = Vector2(616, 38)
-	top_hud.add_theme_constant_override("separation", 8)
-	screen_shake_layer.add_child(top_hud)
+	var decoration_layer := Control.new()
+	decoration_layer.name = "DecorationLayer"
+	decoration_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	screen_shake_layer.add_child(decoration_layer)
 
-	round_label = _hud_label("Round 1 / 4")
-	score_label = _hud_label("Score 0")
-	target_label = _hud_label("Target 320")
-	top_hud.add_child(round_label)
-	top_hud.add_child(score_label)
-	top_hud.add_child(target_label)
+	var hud_layer := Control.new()
+	hud_layer.name = "HudLayer"
+	hud_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	screen_shake_layer.add_child(hud_layer)
 
-	var generals_panel := PanelContainer.new()
-	generals_panel.position = Vector2(14, 52)
-	generals_panel.size = Vector2(430, 48)
-	generals_panel.add_theme_stylebox_override("panel", _panel_box(Color(0.08, 0.04, 0.045, 0.82), Color(0.58, 0.24, 0.12), 2))
-	screen_shake_layer.add_child(generals_panel)
+	var interaction_layer := Control.new()
+	interaction_layer.name = "InteractionLayer"
+	interaction_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	screen_shake_layer.add_child(interaction_layer)
 
-	var generals := HBoxContainer.new()
-	generals.add_theme_constant_override("separation", 6)
-	generals_panel.add_child(generals)
-	for label_text in ["GENERAL SLOT", "+BASE", "xMULT", "CHAIN"]:
-		var label := _small_badge(label_text)
-		generals.add_child(label)
+	fx_layer = Control.new()
+	fx_layer.name = "FxLayer"
+	fx_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(fx_layer)
 
+	_build_title_cluster(decoration_layer)
+	_build_hud(hud_layer)
+	_build_modifier_row(interaction_layer)
+	_build_play_area(interaction_layer)
+	_build_preview_panel(interaction_layer)
+	_build_hand_row(interaction_layer)
+	_build_bottom_status(interaction_layer)
+
+
+func _build_title_cluster(parent: Control) -> void:
+	var seal := Label.new()
+	seal.name = "BattleSealMark"
+	seal.text = "三\n国"
+	seal.position = Vector2(16, 20)
+	seal.add_theme_font_size_override("font_size", 17)
+	seal.add_theme_color_override("font_color", Color(1.0, 0.18, 0.12))
+	parent.add_child(seal)
+
+	var title := Label.new()
+	title.name = "BattleLogoTitle"
+	title.text = "Sangoku\nMahjong"
+	title.position = Vector2(52, 26)
+	title.size = Vector2(190, 84)
+	title.add_theme_font_size_override("font_size", 28)
+	title.add_theme_color_override("font_color", Color(1.0, 0.72, 0.18))
+	title.add_theme_color_override("font_shadow_color", Color.BLACK)
+	title.add_theme_constant_override("shadow_offset_x", 3)
+	title.add_theme_constant_override("shadow_offset_y", 3)
+	parent.add_child(title)
+
+
+func _build_hud(parent: Control) -> void:
+	round_badge = HudBadgeScript.new()
+	round_badge.name = "RoundBadge"
+	round_badge.setup("ROUND", "1 / 4", 112)
+	round_badge.position = Vector2(238, 12)
+	parent.add_child(round_badge)
+
+	score_badge = HudBadgeScript.new()
+	score_badge.name = "ScoreBadge"
+	score_badge.setup("SCORE", "0", 150)
+	score_badge.position = Vector2(356, 12)
+	score_badge.value_label.name = "ScoreValue"
+	parent.add_child(score_badge)
+
+	target_badge = HudBadgeScript.new()
+	target_badge.name = "TargetBadge"
+	target_badge.setup("TARGET", "60,000", 112)
+	target_badge.position = Vector2(512, 12)
+	parent.add_child(target_badge)
+
+
+func _build_modifier_row(parent: Control) -> void:
+	var row := HBoxContainer.new()
+	row.name = "ModifierRow"
+	row.position = Vector2(238, 58)
+	row.size = Vector2(294, 34)
+	row.add_theme_constant_override("separation", 6)
+	parent.add_child(row)
+	for data in [["GeneralSlotBadge", "GENERAL SLOT"], ["BaseModBadge", "+BASE"], ["MultModBadge", "xMULT"], ["ChainModBadge", "CHAIN"]]:
+		var badge: ModifierBadge = ModifierBadgeScript.new()
+		badge.name = data[0]
+		badge.setup(data[1], 70 if data[0] != "GeneralSlotBadge" else 100)
+		row.add_child(badge)
+
+
+func _build_play_area(parent: Control) -> void:
 	play_area = PanelContainer.new()
-	play_area.position = Vector2(20, 108)
-	play_area.size = Vector2(402, 132)
-	play_area.add_theme_stylebox_override("panel", _panel_box(Color(0.10, 0.025, 0.04, 0.9), Color(0.93, 0.52, 0.16), 3))
-	screen_shake_layer.add_child(play_area)
+	play_area.name = "PlayAreaPanel"
+	play_area.position = Vector2(228, 100)
+	play_area.size = Vector2(282, 142)
+	play_area.add_theme_stylebox_override("panel", _panel_box(Color(0.08, 0.025, 0.03, 0.80), Color(0.95, 0.38, 0.10), 2))
+	parent.add_child(play_area)
 
-	var play_stack := VBoxContainer.new()
-	play_stack.alignment = BoxContainer.ALIGNMENT_CENTER
-	play_stack.add_theme_constant_override("separation", 6)
-	play_area.add_child(play_stack)
+	var stack := VBoxContainer.new()
+	stack.name = "PlayAreaStack"
+	stack.alignment = BoxContainer.ALIGNMENT_CENTER
+	stack.add_theme_constant_override("separation", 4)
+	play_area.add_child(stack)
 
-	var play_title := Label.new()
-	play_title.text = "PLAY AREA"
-	play_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	play_title.add_theme_font_size_override("font_size", 13)
-	play_title.add_theme_color_override("font_color", Color(0.7, 0.96, 0.78))
-	play_stack.add_child(play_title)
+	var title := Label.new()
+	title.name = "PlayAreaTitle"
+	title.text = "PLAY AREA"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 11)
+	title.add_theme_color_override("font_color", Color(0.52, 1.0, 0.68))
+	stack.add_child(title)
 
-	burst_label = Label.new()
-	burst_label.text = "SELECT A SET"
-	burst_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	burst_label.add_theme_font_size_override("font_size", 28)
-	burst_label.add_theme_color_override("font_color", Color(1.0, 0.76, 0.24))
-	burst_label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.8))
-	burst_label.add_theme_constant_override("shadow_offset_x", 3)
-	burst_label.add_theme_constant_override("shadow_offset_y", 3)
-	play_stack.add_child(burst_label)
+	score_burst_label = Label.new()
+	score_burst_label.name = "ScoreBurstLabel"
+	score_burst_label.text = "SELECT A SET"
+	score_burst_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	score_burst_label.add_theme_font_size_override("font_size", 28)
+	score_burst_label.add_theme_color_override("font_color", Color(1.0, 0.73, 0.18))
+	score_burst_label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.85))
+	score_burst_label.add_theme_constant_override("shadow_offset_x", 3)
+	score_burst_label.add_theme_constant_override("shadow_offset_y", 3)
+	stack.add_child(score_burst_label)
 
-	var right_panel := PanelContainer.new()
-	right_panel.position = Vector2(456, 58)
-	right_panel.size = Vector2(160, 236)
-	right_panel.add_theme_stylebox_override("panel", _panel_box(Color(0.055, 0.055, 0.07, 0.93), Color(0.12, 0.72, 0.48), 2))
-	screen_shake_layer.add_child(right_panel)
+	multiplier_burst_label = Label.new()
+	multiplier_burst_label.name = "MultiplierBurstLabel"
+	multiplier_burst_label.text = "x0 MULTIPLIER"
+	multiplier_burst_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	multiplier_burst_label.add_theme_font_size_override("font_size", 15)
+	multiplier_burst_label.add_theme_color_override("font_color", Color(0.35, 1.0, 0.58))
+	stack.add_child(multiplier_burst_label)
 
-	var preview := VBoxContainer.new()
-	preview.add_theme_constant_override("separation", 7)
-	right_panel.add_child(preview)
+	play_area_tile_row = HBoxContainer.new()
+	play_area_tile_row.name = "PlayedTileEchoRow"
+	play_area_tile_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	play_area_tile_row.add_theme_constant_override("separation", 5)
+	stack.add_child(play_area_tile_row)
 
-	var preview_title := _section_label("Score Preview")
-	preview.add_child(preview_title)
-	preview_pattern_label = _value_label("Select tiles")
-	preview_base_label = _value_label("Base 0")
-	preview_mult_label = _value_label("Multiplier x0")
-	preview_score_label = _value_label("Score 0")
-	preview.add_child(preview_pattern_label)
-	preview.add_child(preview_base_label)
-	preview.add_child(preview_mult_label)
-	preview.add_child(preview_score_label)
+
+func _build_preview_panel(parent: Control) -> void:
+	var panel := PanelContainer.new()
+	panel.name = "ScorePreviewPanel"
+	panel.position = Vector2(520, 82)
+	panel.size = Vector2(112, 198)
+	panel.add_theme_stylebox_override("panel", _panel_box(Color(0.030, 0.052, 0.046, 0.95), Color(0.75, 0.38, 0.12), 2))
+	parent.add_child(panel)
+
+	var stack := VBoxContainer.new()
+	stack.name = "ScorePreviewStack"
+	stack.add_theme_constant_override("separation", 5)
+	panel.add_child(stack)
+
+	var title := Label.new()
+	title.name = "ScorePreviewTitle"
+	title.text = "Score Preview"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 12)
+	title.add_theme_color_override("font_color", Color(0.54, 1.0, 0.68))
+	stack.add_child(title)
+
+	preview_pattern_row = _preview_row("Pattern", "SELECT", "PreviewPatternValue")
+	preview_base_row = _preview_row("Base", "0", "PreviewBaseValue")
+	preview_mult_row = _preview_row("Mult", "x0", "PreviewMultiplierValue")
+	preview_score_row = _preview_row("Total", "0", "PreviewScoreValue")
+	stack.add_child(preview_pattern_row)
+	stack.add_child(preview_base_row)
+	stack.add_child(preview_mult_row)
+	stack.add_child(preview_score_row)
 
 	play_button = AnimatedButtonScript.new()
-	play_button.text = "Play Set"
-	play_button.custom_minimum_size = Vector2(128, 36)
+	play_button.name = "PlaySetButton"
+	play_button.text = "PLAY SET"
+	play_button.custom_minimum_size = Vector2(88, 30)
 	play_button.pressed.connect(_on_play_pressed)
-	preview.add_child(play_button)
+	stack.add_child(play_button)
 
 	var back_button: Button = AnimatedButtonScript.new()
-	back_button.text = "Menu"
-	back_button.custom_minimum_size = Vector2(128, 30)
+	back_button.name = "MenuButton"
+	back_button.text = "MENU"
+	back_button.custom_minimum_size = Vector2(88, 24)
 	back_button.pressed.connect(func() -> void: get_tree().change_scene_to_file("res://src/scenes/main_menu/main.tscn"))
-	preview.add_child(back_button)
+	stack.add_child(back_button)
 
+
+func _build_hand_row(parent: Control) -> void:
 	hand_row = HBoxContainer.new()
-	hand_row.position = Vector2(12, 292)
-	hand_row.size = Vector2(616, 62)
+	hand_row.name = "HandTileRow"
+	hand_row.position = Vector2(132, 292)
+	hand_row.size = Vector2(472, 62)
 	hand_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	hand_row.add_theme_constant_override("separation", 7)
-	screen_shake_layer.add_child(hand_row)
+	hand_row.add_theme_constant_override("separation", 4)
+	parent.add_child(hand_row)
 
-	var scanlines := ColorRect.new()
-	scanlines.set_anchors_preset(Control.PRESET_FULL_RECT)
-	scanlines.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	scanlines.material = _make_scanline_material()
-	add_child(scanlines)
+
+func _build_bottom_status(parent: Control) -> void:
+	var discard_panel := PanelContainer.new()
+	discard_panel.name = "DiscardPanel"
+	discard_panel.position = Vector2(16, 300)
+	discard_panel.size = Vector2(100, 48)
+	discard_panel.add_theme_stylebox_override("panel", _panel_box(Color(0.04, 0.04, 0.038, 0.92), Color(0.58, 0.28, 0.09), 2))
+	parent.add_child(discard_panel)
+
+	var discard_stack := VBoxContainer.new()
+	discard_stack.name = "DiscardStack"
+	discard_stack.alignment = BoxContainer.ALIGNMENT_CENTER
+	discard_panel.add_child(discard_stack)
+
+	var discard_title := Label.new()
+	discard_title.name = "DiscardTitle"
+	discard_title.text = "DISCARD"
+	discard_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	discard_title.add_theme_font_size_override("font_size", 10)
+	discard_title.add_theme_color_override("font_color", Color(0.75, 0.84, 0.65))
+	discard_stack.add_child(discard_title)
+
+	discards_left_label = Label.new()
+	discards_left_label.name = "DiscardsLeftValue"
+	discards_left_label.text = "0"
+	discards_left_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	discards_left_label.add_theme_font_size_override("font_size", 18)
+	discards_left_label.add_theme_color_override("font_color", Color(1.0, 0.72, 0.24))
+	discard_stack.add_child(discards_left_label)
+
+	hand_value_label = Label.new()
+	hand_value_label.name = "HandValueLabel"
+	hand_value_label.text = "HAND VALUE 0"
+	hand_value_label.position = Vector2(526, 304)
+	hand_value_label.size = Vector2(104, 22)
+	hand_value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hand_value_label.add_theme_font_size_override("font_size", 11)
+	hand_value_label.add_theme_color_override("font_color", Color(0.78, 0.92, 0.72))
+	parent.add_child(hand_value_label)
+
+
+func _preview_row(label_text: String, value_text: String, value_name: String) -> PreviewRow:
+	var row: PreviewRow = PreviewRowScript.new()
+	row.name = value_name.replace("Value", "Row")
+	row.setup(label_text, value_text, value_name)
+	return row
 
 
 func _refresh_hand() -> void:
@@ -172,6 +318,7 @@ func _refresh_hand() -> void:
 	battle.hand.sort_in_place()
 	for i in range(battle.hand.tiles.size()):
 		var card: TileCard = TileCardScript.new()
+		card.name = "TileCard_%02d" % i
 		card.setup(battle.hand.tiles[i], i)
 		card.card_pressed.connect(_on_tile_pressed)
 		hand_row.add_child(card)
@@ -186,29 +333,53 @@ func _on_tile_pressed(card: TileCard) -> void:
 		selected_cards.append(card)
 		card.set_selected(true)
 		card.flash()
+	_update_play_area_echo()
 	_update_preview()
+
+
+func _update_play_area_echo() -> void:
+	for child in play_area_tile_row.get_children():
+		child.queue_free()
+	for i in range(selected_cards.size()):
+		var echo := Label.new()
+		echo.name = "PlayedTileEcho_%02d" % i
+		echo.text = selected_cards[i].tile.display_name()
+		echo.custom_minimum_size = Vector2(38, 28)
+		echo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		echo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		echo.add_theme_font_size_override("font_size", 13)
+		echo.add_theme_color_override("font_color", Color(0.12, 0.06, 0.03))
+		echo.add_theme_stylebox_override("normal", _panel_box(Color(0.95, 0.82, 0.55, 0.96), Color(0.18, 0.72, 0.34), 1))
+		play_area_tile_row.add_child(echo)
 
 
 func _update_preview() -> void:
 	var tiles := _selected_tiles()
 	_last_preview = PatternMatcher.match_pattern(tiles)
 	if _last_preview.is_empty():
-		preview_pattern_label.text = "Invalid Set" if not tiles.is_empty() else "Select tiles"
-		preview_base_label.text = "Base 0"
-		preview_mult_label.text = "Multiplier x0"
-		preview_score_label.text = "Score 0"
+		var empty_text := "INVALID" if not tiles.is_empty() else "SELECT"
+		preview_pattern_row.set_value(empty_text)
+		preview_base_row.set_value("0")
+		preview_mult_row.set_value("x0")
+		preview_score_row.set_value("0")
 		play_button.disabled = true
-		burst_label.text = "SELECT A SET" if tiles.is_empty() else "INVALID SET"
+		score_burst_label.text = "SELECT A SET" if tiles.is_empty() else "INVALID SET"
+		multiplier_burst_label.text = "x0 MULTIPLIER"
+		hand_value_label.text = "HAND VALUE 0"
 		return
 
 	var score := Scorer.score(_last_preview)
 	var english_name := _pattern_name(_last_preview)
-	preview_pattern_label.text = "Pattern  " + english_name
-	preview_base_label.text = "Base  %d" % int(score.get("base_score", 0))
-	preview_mult_label.text = "Multiplier  x%s" % _format_mult(float(score.get("pattern_mult", 0.0)))
-	preview_score_label.text = "Score  %d" % int(score.get("final_score", 0))
+	var final_score := int(score.get("final_score", 0))
+	preview_pattern_row.set_value(english_name)
+	preview_base_row.set_value(str(int(score.get("base_score", 0))))
+	preview_mult_row.set_value("x%s" % _format_mult(float(score.get("pattern_mult", 0.0))))
+	preview_score_row.set_value(str(final_score))
 	play_button.disabled = false
-	burst_label.text = english_name
+	score_burst_label.text = english_name
+	multiplier_burst_label.text = "x%s MULTIPLIER" % _format_mult(float(score.get("pattern_mult", 0.0)))
+	hand_value_label.text = "HAND VALUE %d" % final_score
+	preview_score_row.flash()
 
 
 func _on_play_pressed() -> void:
@@ -225,26 +396,30 @@ func _on_play_pressed() -> void:
 	_play_resolution_animation(pattern_text, gained)
 	selected_cards.clear()
 	_refresh_hand()
+	_update_play_area_echo()
 	_update_preview()
 
 
 func _play_resolution_animation(pattern_text: String, gained: int) -> void:
-	burst_label.text = pattern_text + "\n+" + str(gained)
-	burst_label.scale = Vector2(0.55, 0.55)
+	score_burst_label.text = "EPIC CHAIN!\n+" + _format_int(gained)
+	score_burst_label.scale = Vector2(0.5, 0.5)
+	multiplier_burst_label.text = pattern_text
 	var tween := create_tween()
 	tween.set_parallel(true)
 	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(burst_label, "scale", Vector2(1.25, 1.25), 0.16)
-	tween.tween_property(burst_label, "modulate", Color(1.0, 0.36, 0.22), 0.08)
-	tween.chain().tween_property(burst_label, "modulate", Color.WHITE, 0.22)
-	_show_popup("+" + str(gained), Color(1.0, 0.83, 0.2))
+	tween.tween_property(score_burst_label, "scale", Vector2(1.32, 1.32), 0.16)
+	tween.tween_property(score_burst_label, "modulate", Color(1.0, 0.32, 0.12), 0.08)
+	tween.chain().tween_property(score_burst_label, "modulate", Color.WHITE, 0.24)
+	_show_popup("+" + _format_int(gained), Color(1.0, 0.83, 0.2))
 	_shake_screen()
+	score_badge.pulse()
 
 
 func _show_popup(message: String, color: Color) -> void:
 	var popup: ScorePopup = ScorePopupScript.new()
-	add_child(popup)
-	popup.popup(message, Vector2(246, 178), color)
+	popup.name = "FloatingScorePopup"
+	fx_layer.add_child(popup)
+	popup.popup(message, Vector2(300, 170), color)
 
 
 func _shake_screen() -> void:
@@ -263,9 +438,10 @@ func _selected_tiles() -> Array:
 
 
 func _update_hud() -> void:
-	round_label.text = "Round %d / %d" % [min(battle.current_turn, BattleState.MAX_TURNS), BattleState.MAX_TURNS]
-	score_label.text = "Score %d" % battle.total_score
-	target_label.text = "Target %d" % battle.target_score
+	round_badge.set_value("%d / %d" % [min(battle.current_turn, BattleState.MAX_TURNS), BattleState.MAX_TURNS])
+	score_badge.set_value(_format_int(battle.total_score))
+	target_badge.set_value(_format_int(battle.target_score))
+	discards_left_label.text = str(max(BattleState.MAX_TURNS - battle.current_turn + 1, 0))
 
 
 func _pattern_name(pattern: Dictionary) -> String:
@@ -278,47 +454,16 @@ func _format_mult(value: float) -> String:
 	return "%.1f" % value
 
 
-func _hud_label(label_text: String) -> Label:
-	var label := Label.new()
-	label.text = label_text
-	label.custom_minimum_size = Vector2(150, 30)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 14)
-	label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.42))
-	label.add_theme_color_override("font_shadow_color", Color.BLACK)
-	label.add_theme_constant_override("shadow_offset_x", 2)
-	label.add_theme_constant_override("shadow_offset_y", 2)
-	return label
-
-
-func _section_label(label_text: String) -> Label:
-	var label := Label.new()
-	label.text = label_text
-	label.add_theme_font_size_override("font_size", 16)
-	label.add_theme_color_override("font_color", Color(0.38, 1.0, 0.72))
-	return label
-
-
-func _value_label(label_text: String) -> Label:
-	var label := Label.new()
-	label.text = label_text
-	label.add_theme_font_size_override("font_size", 12)
-	label.add_theme_color_override("font_color", Color(0.96, 0.88, 0.68))
-	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	return label
-
-
-func _small_badge(label_text: String) -> Label:
-	var label := Label.new()
-	label.text = label_text
-	label.custom_minimum_size = Vector2(92, 28)
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 11)
-	label.add_theme_color_override("font_color", Color(0.94, 0.88, 0.55))
-	label.add_theme_stylebox_override("normal", _panel_box(Color(0.16, 0.08, 0.10, 0.9), Color(0.68, 0.31, 0.12), 1))
-	return label
+func _format_int(value: int) -> String:
+	var text := str(value)
+	var out := ""
+	var count := 0
+	for i in range(text.length() - 1, -1, -1):
+		if count > 0 and count % 3 == 0:
+			out = "," + out
+		out = text[i] + out
+		count += 1
+	return out
 
 
 func _panel_box(fill: Color, border: Color, border_width: int) -> StyleBoxFlat:
@@ -330,44 +475,10 @@ func _panel_box(fill: Color, border: Color, border_width: int) -> StyleBoxFlat:
 	box.corner_radius_top_right = 5
 	box.corner_radius_bottom_left = 5
 	box.corner_radius_bottom_right = 5
-	box.shadow_color = Color(0.0, 0.0, 0.0, 0.55)
-	box.shadow_size = 5
-	box.content_margin_left = 10
-	box.content_margin_right = 10
-	box.content_margin_top = 8
-	box.content_margin_bottom = 8
+	box.shadow_color = Color(0.0, 0.0, 0.0, 0.58)
+	box.shadow_size = 6
+	box.content_margin_left = 8
+	box.content_margin_right = 8
+	box.content_margin_top = 6
+	box.content_margin_bottom = 6
 	return box
-
-
-func _make_battle_background_material() -> ShaderMaterial:
-	var shader := Shader.new()
-	shader.code = """
-shader_type canvas_item;
-void fragment() {
-	vec2 uv = UV;
-	float wood = sin((uv.x * 18.0 + sin(uv.y * 9.0)) + TIME * 0.12) * 0.035;
-	float pulse = sin(TIME * 2.6 + uv.x * 8.0 + uv.y * 4.0) * 0.5 + 0.5;
-	vec3 base = mix(vec3(0.055, 0.018, 0.018), vec3(0.16, 0.055, 0.035), uv.y);
-	vec3 jade = vec3(0.0, 0.35, 0.22) * (1.0 - smoothstep(0.05, 0.82, distance(uv, vec2(0.72, 0.42))));
-	vec3 ember = vec3(0.85, 0.18, 0.05) * pulse * 0.12;
-	COLOR = vec4(base + wood + jade * 0.28 + ember, 1.0);
-}
-"""
-	var material := ShaderMaterial.new()
-	material.shader = shader
-	return material
-
-
-func _make_scanline_material() -> ShaderMaterial:
-	var shader := Shader.new()
-	shader.code = """
-shader_type canvas_item;
-void fragment() {
-	float scan = max(sin((UV.y + TIME * 0.2) * 720.0), 0.0);
-	float vignette = smoothstep(0.35, 0.82, distance(UV, vec2(0.5)));
-	COLOR = vec4(0.0, 0.0, 0.0, scan * 0.06 + vignette * 0.28);
-}
-"""
-	var material := ShaderMaterial.new()
-	material.shader = shader
-	return material

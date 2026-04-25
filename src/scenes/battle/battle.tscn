@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://dgmg4r6kq552m"]
+[gd_scene format=3 uid="uid://dgmg4r6kq552m"]
 
 [ext_resource type="Script" path="res://src/scenes/battle/battle.gd" id="1_battle"]
 

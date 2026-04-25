@@ -1,10 +1,12 @@
 extends Control
 
 const AnimatedButtonScript = preload("res://src/ui/animated_button.gd")
+const LayeredBackgroundScript = preload("res://src/ui/layered_background.gd")
 
 var _time := 0.0
-var _title: Label
-var _subtitle: Label
+var main_title: Label
+var subtitle_label: Label
+var decorative_tiles: Array[Label] = []
 
 
 func _ready() -> void:
@@ -14,122 +16,128 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_time += delta
-	if _title != null:
-		_title.position.x = 58.0 + sin(_time * 1.7) * 2.0
-	if _subtitle != null:
-		_subtitle.modulate.a = 0.65 + sin(_time * 3.1) * 0.22
+	if main_title != null:
+		main_title.position.x = 50.0 + sin(_time * 1.45) * 3.0
+		main_title.scale = Vector2.ONE * (1.0 + sin(_time * 2.0) * 0.012)
+	if subtitle_label != null:
+		subtitle_label.modulate.a = 0.62 + sin(_time * 3.1) * 0.25
+	for i in range(decorative_tiles.size()):
+		var tile := decorative_tiles[i]
+		tile.position.y = 104.0 + sin(_time * (1.1 + i * 0.09) + i) * 10.0 + (i % 2) * 34.0
+		tile.rotation_degrees = -10.0 + i * 4.0 + sin(_time + i) * 3.0
 
 
 func _build_menu() -> void:
 	for child in get_children():
 		child.queue_free()
+	decorative_tiles.clear()
 
-	var background := ColorRect.new()
-	background.set_anchors_preset(Control.PRESET_FULL_RECT)
-	background.material = _make_background_material()
+	var background: LayeredBackground = LayeredBackgroundScript.new()
+	background.name = "BackgroundLayer"
+	background.variant = "main_menu"
 	add_child(background)
 
-	var scanlines := ColorRect.new()
-	scanlines.set_anchors_preset(Control.PRESET_FULL_RECT)
-	scanlines.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	scanlines.material = _make_scanline_material()
-	add_child(scanlines)
+	var decoration_layer := Control.new()
+	decoration_layer.name = "DecorationLayer"
+	decoration_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(decoration_layer)
 
-	var table_glow := ColorRect.new()
-	table_glow.set_anchors_preset(Control.PRESET_FULL_RECT)
-	table_glow.color = Color(0.08, 0.02, 0.03, 0.32)
-	add_child(table_glow)
+	var interact_layer := Control.new()
+	interact_layer.name = "InteractionLayer"
+	interact_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(interact_layer)
 
-	var left_panel := PanelContainer.new()
-	left_panel.position = Vector2(38, 40)
-	left_panel.size = Vector2(284, 260)
-	left_panel.add_theme_stylebox_override("panel", _panel_box(Color(0.12, 0.035, 0.052, 0.92), Color(0.86, 0.48, 0.18), 3))
-	add_child(left_panel)
+	var fx_layer := Control.new()
+	fx_layer.name = "FxLayer"
+	fx_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(fx_layer)
 
-	var menu := VBoxContainer.new()
-	menu.add_theme_constant_override("separation", 14)
-	left_panel.add_child(menu)
+	var title_mark := Label.new()
+	title_mark.name = "VerticalSealMark"
+	title_mark.text = "三\n国"
+	title_mark.position = Vector2(18, 22)
+	title_mark.add_theme_font_size_override("font_size", 20)
+	title_mark.add_theme_color_override("font_color", Color(1.0, 0.18, 0.12))
+	decoration_layer.add_child(title_mark)
 
-	_title = Label.new()
-	_title.text = "Sangoku\nMahjong"
-	_title.add_theme_font_size_override("font_size", 38)
-	_title.add_theme_color_override("font_color", Color(1.0, 0.82, 0.24))
-	_title.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.8))
-	_title.add_theme_constant_override("shadow_offset_x", 3)
-	_title.add_theme_constant_override("shadow_offset_y", 3)
-	menu.add_child(_title)
+	main_title = Label.new()
+	main_title.name = "MainTitle"
+	main_title.text = "Sangoku\nMahjong"
+	main_title.position = Vector2(50, 36)
+	main_title.size = Vector2(310, 110)
+	main_title.add_theme_font_size_override("font_size", 41)
+	main_title.add_theme_color_override("font_color", Color(1.0, 0.76, 0.18))
+	main_title.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.85))
+	main_title.add_theme_constant_override("shadow_offset_x", 4)
+	main_title.add_theme_constant_override("shadow_offset_y", 4)
+	interact_layer.add_child(main_title)
 
-	_subtitle = Label.new()
-	_subtitle.text = "Tile scoring roguelike prototype"
-	_subtitle.add_theme_font_size_override("font_size", 12)
-	_subtitle.add_theme_color_override("font_color", Color(0.76, 0.95, 0.78))
-	menu.add_child(_subtitle)
+	subtitle_label = Label.new()
+	subtitle_label.name = "MainSubtitle"
+	subtitle_label.text = "Fate favors bold hands."
+	subtitle_label.position = Vector2(66, 158)
+	subtitle_label.size = Vector2(250, 24)
+	subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle_label.add_theme_font_size_override("font_size", 13)
+	subtitle_label.add_theme_color_override("font_color", Color(0.46, 1.0, 0.64))
+	interact_layer.add_child(subtitle_label)
 
-	var start_button: Button = AnimatedButtonScript.new()
-	start_button.text = "Start Run"
-	start_button.custom_minimum_size = Vector2(210, 42)
+	var menu_panel := PanelContainer.new()
+	menu_panel.name = "MainMenuPanel"
+	menu_panel.position = Vector2(48, 190)
+	menu_panel.size = Vector2(238, 150)
+	menu_panel.add_theme_stylebox_override("panel", _panel_box(Color(0.025, 0.04, 0.035, 0.94), Color(0.74, 0.36, 0.10), 2))
+	interact_layer.add_child(menu_panel)
+
+	var menu_stack := VBoxContainer.new()
+	menu_stack.name = "MainMenuButtonStack"
+	menu_stack.add_theme_constant_override("separation", 8)
+	menu_panel.add_child(menu_stack)
+
+	var start_button := _menu_button("StartRunButton", "Start Run", Vector2(190, 30))
 	start_button.pressed.connect(func() -> void:
 		get_tree().change_scene_to_file("res://src/scenes/battle/battle.tscn")
 	)
-	menu.add_child(start_button)
-
-	var quit_button: Button = AnimatedButtonScript.new()
-	quit_button.text = "Quit"
-	quit_button.custom_minimum_size = Vector2(210, 34)
+	menu_stack.add_child(start_button)
+	menu_stack.add_child(_menu_button("CollectionButton", "Collection", Vector2(190, 26), true))
+	menu_stack.add_child(_menu_button("OptionsButton", "Options", Vector2(190, 26), true))
+	var quit_button := _menu_button("QuitButton", "Quit", Vector2(190, 26))
 	quit_button.pressed.connect(func() -> void: get_tree().quit())
-	menu.add_child(quit_button)
+	menu_stack.add_child(quit_button)
 
-	var marquee := Label.new()
-	marquee.text = "CRIT CHAIN  xMULT  GOLDEN SET"
-	marquee.position = Vector2(352, 42)
-	marquee.size = Vector2(230, 28)
-	marquee.rotation_degrees = -4.0
-	marquee.add_theme_font_size_override("font_size", 13)
-	marquee.add_theme_color_override("font_color", Color(1.0, 0.36, 0.3))
-	add_child(marquee)
+	var glow_label := Label.new()
+	glow_label.name = "RightMarqueeText"
+	glow_label.text = "EPIC CHAIN   xMULT   GOLDEN SET"
+	glow_label.position = Vector2(342, 44)
+	glow_label.size = Vector2(260, 26)
+	glow_label.rotation_degrees = -3.0
+	glow_label.add_theme_font_size_override("font_size", 14)
+	glow_label.add_theme_color_override("font_color", Color(1.0, 0.32, 0.18))
+	fx_layer.add_child(glow_label)
 
-	for i in range(7):
-		var chip := Label.new()
-		chip.text = ["万", "筒", "索"][i % 3]
-		chip.position = Vector2(350 + i * 31, 122 + sin(i) * 34)
-		chip.rotation_degrees = -12.0 + i * 5.0
-		chip.add_theme_font_size_override("font_size", 28)
-		chip.add_theme_color_override("font_color", [Color(0.92, 0.18, 0.18), Color(0.2, 0.7, 1.0), Color(0.25, 0.9, 0.44)][i % 3])
-		add_child(chip)
-
-
-func _make_background_material() -> ShaderMaterial:
-	var shader := Shader.new()
-	shader.code = """
-shader_type canvas_item;
-void fragment() {
-	vec2 uv = UV;
-	float pulse = sin(TIME * 1.8 + uv.x * 8.0) * 0.5 + 0.5;
-	float banner = smoothstep(0.18, 0.22, abs(sin((uv.x + uv.y * 0.25 + TIME * 0.04) * 18.0)));
-	vec3 base = mix(vec3(0.035, 0.01, 0.018), vec3(0.18, 0.035, 0.055), uv.y);
-	vec3 jade = vec3(0.02, 0.28, 0.19) * (1.0 - distance(uv, vec2(0.78, 0.58)));
-	vec3 bronze = vec3(0.75, 0.32, 0.08) * pulse * 0.18;
-	COLOR = vec4(base + jade * 0.38 + bronze + banner * 0.035, 1.0);
-}
-"""
-	var material := ShaderMaterial.new()
-	material.shader = shader
-	return material
+	var symbols := ["万", "筒", "索", "東", "南", "白", "中"]
+	for i in range(symbols.size()):
+		var tile := Label.new()
+		tile.name = "MenuDecorTile_%02d" % i
+		tile.text = symbols[i]
+		tile.position = Vector2(350 + i * 34, 104 + (i % 2) * 34)
+		tile.size = Vector2(34, 42)
+		tile.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		tile.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		tile.add_theme_font_size_override("font_size", 26)
+		tile.add_theme_color_override("font_color", [Color(0.95, 0.16, 0.14), Color(0.2, 0.75, 1.0), Color(0.2, 1.0, 0.48)][i % 3])
+		tile.add_theme_stylebox_override("normal", _panel_box(Color(0.94, 0.82, 0.56, 0.95), Color(0.38, 0.14, 0.05), 2))
+		decoration_layer.add_child(tile)
+		decorative_tiles.append(tile)
 
 
-func _make_scanline_material() -> ShaderMaterial:
-	var shader := Shader.new()
-	shader.code = """
-shader_type canvas_item;
-void fragment() {
-	float line = sin((UV.y + TIME * 0.18) * 720.0);
-	float vignette = distance(UV, vec2(0.5));
-	COLOR = vec4(0.0, 0.0, 0.0, 0.10 + max(line, 0.0) * 0.07 + vignette * 0.16);
-}
-"""
-	var material := ShaderMaterial.new()
-	material.shader = shader
-	return material
+func _menu_button(node_name: String, label_text: String, min_size: Vector2, disabled := false) -> Button:
+	var button: AnimatedButton = AnimatedButtonScript.new()
+	button.name = node_name
+	button.text = label_text
+	button.custom_minimum_size = min_size
+	button.disabled = disabled
+	return button
 
 
 func _panel_box(fill: Color, border: Color, border_width: int) -> StyleBoxFlat:
@@ -137,14 +145,14 @@ func _panel_box(fill: Color, border: Color, border_width: int) -> StyleBoxFlat:
 	box.bg_color = fill
 	box.border_color = border
 	box.set_border_width_all(border_width)
-	box.corner_radius_top_left = 6
-	box.corner_radius_top_right = 6
-	box.corner_radius_bottom_left = 6
-	box.corner_radius_bottom_right = 6
-	box.shadow_color = Color(0.0, 0.0, 0.0, 0.55)
-	box.shadow_size = 8
-	box.content_margin_left = 18
-	box.content_margin_right = 18
-	box.content_margin_top = 18
-	box.content_margin_bottom = 18
+	box.corner_radius_top_left = 5
+	box.corner_radius_top_right = 5
+	box.corner_radius_bottom_left = 5
+	box.corner_radius_bottom_right = 5
+	box.shadow_color = Color(0.0, 0.0, 0.0, 0.58)
+	box.shadow_size = 6
+	box.content_margin_left = 10
+	box.content_margin_right = 10
+	box.content_margin_top = 8
+	box.content_margin_bottom = 8
 	return box
