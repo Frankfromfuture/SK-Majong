@@ -4,7 +4,7 @@
 
 ## 当前阶段
 
-Phase 0: Godot 项目脚手架。
+Phase 1: 核心数据层。
 
 ## 技术约定
 
@@ -28,6 +28,12 @@ godot --path . --headless --quit
 
 ```sh
 godot --path . --headless -s res://addons/gut/gut_cmdln.gd -gdir=res://tests -gexit
+```
+
+重新导出牌型表：
+
+```sh
+godot --path . --headless -s res://tools/data_export/export_pattern_table.gd
 ```
 
 ## MVP 边界
