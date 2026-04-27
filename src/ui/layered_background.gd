@@ -2,6 +2,9 @@ class_name LayeredBackground
 extends Control
 
 @export var variant := "battle"
+@export var show_shader_base := true
+@export var show_banners := true
+@export var show_symbols := true
 
 var _time := 0.0
 var _floaters: Array[Control] = []
@@ -30,42 +33,45 @@ func _process(delta: float) -> void:
 
 
 func _build() -> void:
-	var base := ColorRect.new()
-	base.name = "AnimatedShaderBase"
-	base.set_anchors_preset(Control.PRESET_FULL_RECT)
-	base.material = _make_background_material()
-	add_child(base)
+	if show_shader_base:
+		var base := ColorRect.new()
+		base.name = "AnimatedShaderBase"
+		base.set_anchors_preset(Control.PRESET_FULL_RECT)
+		base.material = _make_background_material()
+		add_child(base)
 
 	var banner_layer := Control.new()
 	banner_layer.name = "LoopingBannerLayer"
 	banner_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(banner_layer)
 
-	for i in range(6):
-		var banner := ColorRect.new()
-		banner.name = "BannerRibbon_%02d" % i
-		banner.color = Color(0.42, 0.035, 0.04, 0.5)
-		banner.position = Vector2(46 + i * 96, 16 + (i % 2) * 28)
-		banner.size = Vector2(64, 14)
-		banner.rotation_degrees = -12 + i * 4
-		banner_layer.add_child(banner)
-		_floaters.append(banner)
+	if show_banners:
+		for i in range(6):
+			var banner := ColorRect.new()
+			banner.name = "BannerRibbon_%02d" % i
+			banner.color = Color(0.42, 0.035, 0.04, 0.5)
+			banner.position = Vector2(46 + i * 96, 16 + (i % 2) * 28)
+			banner.size = Vector2(64, 14)
+			banner.rotation_degrees = -12 + i * 4
+			banner_layer.add_child(banner)
+			_floaters.append(banner)
 
 	var symbol_layer := Control.new()
 	symbol_layer.name = "FloatingMahjongSymbolLayer"
 	symbol_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(symbol_layer)
 
-	var symbols := ["万", "筒", "索", "東", "南", "白", "中"]
-	for i in range(symbols.size()):
-		var label := Label.new()
-		label.name = "FloatingSymbol_%02d" % i
-		label.text = symbols[i]
-		label.position = Vector2(42 + i * 84, 70 + sin(i) * 46)
-		label.add_theme_font_size_override("font_size", 22 + (i % 3) * 4)
-		label.add_theme_color_override("font_color", Color(0.95, 0.32, 0.2, 0.25) if i % 2 == 0 else Color(0.2, 0.85, 0.58, 0.22))
-		symbol_layer.add_child(label)
-		_floaters.append(label)
+	if show_symbols:
+		var symbols := ["万", "筒", "索", "東", "南", "白", "中"]
+		for i in range(symbols.size()):
+			var label := Label.new()
+			label.name = "FloatingSymbol_%02d" % i
+			label.text = symbols[i]
+			label.position = Vector2(42 + i * 84, 70 + sin(i) * 46)
+			label.add_theme_font_size_override("font_size", 22 + (i % 3) * 4)
+			label.add_theme_color_override("font_color", Color(0.95, 0.32, 0.2, 0.25) if i % 2 == 0 else Color(0.2, 0.85, 0.58, 0.22))
+			symbol_layer.add_child(label)
+			_floaters.append(label)
 
 	var sparkle_layer := Control.new()
 	sparkle_layer.name = "LoopingSparkLayer"

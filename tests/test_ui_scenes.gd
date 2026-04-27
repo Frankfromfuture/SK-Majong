@@ -15,6 +15,13 @@ func test_main_menu_exposes_english_start_and_quit_buttons() -> void:
 	assert_not_null(_find_label(scene, "Sangoku\nMahjong"))
 	assert_not_null(scene.find_child("StartRunButton", true, false))
 	assert_not_null(scene.find_child("MainTitle", true, false))
+	assert_not_null(scene.find_child("LogoSprite", true, false))
+	assert_not_null(scene.find_child("LanternRightSprite", true, false))
+	assert_not_null(scene.find_child("HighestScoreValue", true, false))
+	assert_not_null(scene.find_child("BonusMultiplierValue", true, false))
+	assert_not_null(scene.find_child("MenuTile_Wan_01", true, false))
+	assert_lt((scene.find_child("LeftBannerSprite", true, false) as Control).size.x, 60.0)
+	assert_lt((scene.find_child("LogoSprite", true, false) as Control).size.x, 110.0)
 	assert_eq(scene.find_child("DecorationLayer", true, false).mouse_filter, Control.MOUSE_FILTER_IGNORE)
 	assert_eq(scene.find_child("FxLayer", true, false).mouse_filter, Control.MOUSE_FILTER_IGNORE)
 
