@@ -21,6 +21,7 @@ var hovered_index := -1
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	mouse_exited.connect(_clear_hover)
 
 
@@ -44,8 +45,8 @@ func setup_tiles(tiles: Array, p_selected_keys := {}, p_hovered_keys := {}, zone
 		var base_position := Vector3(float(i) * spacing - arc_width * 0.5, _arc_y(i, count), 0.0)
 		tile_3d.set("base_position", base_position)
 		tile_3d.position = base_position
-		tile_3d.rotation_degrees.x = -9.0
-		tile_3d.rotation_degrees.z = (float(i) - float(count - 1) * 0.5) * 1.4
+		tile_3d.rotation_degrees.x = -2.0
+		tile_3d.rotation_degrees.z = (float(i) - float(count - 1) * 0.5) * 0.55
 		tile_root.add_child(tile_3d)
 
 	camera.size = 1.35 if count > 4 else 1.15
@@ -144,12 +145,16 @@ func _ensure_viewport() -> void:
 
 	stretch = true
 	stretch_shrink = 1
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	viewport = SubViewport.new()
 	viewport.name = "Tile3DViewport"
 	viewport.transparent_bg = true
 	viewport.own_world_3d = true
 	viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-	viewport.size = _high_quality_viewport_size()
+	viewport.size = _pixel_viewport_size()
+	viewport.msaa_3d = Viewport.MSAA_DISABLED
+	viewport.screen_space_aa = Viewport.SCREEN_SPACE_AA_DISABLED
+	viewport.use_taa = false
 	add_child(viewport)
 
 	scene_root = Node3D.new()
@@ -161,36 +166,34 @@ func _ensure_viewport() -> void:
 	var environment := Environment.new()
 	environment.background_mode = Environment.BG_CLEAR_COLOR
 	environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color = Color(0.68, 0.78, 0.72)
-	environment.ambient_light_energy = 1.35
+	environment.ambient_light_color = Color(0.84, 0.86, 0.72)
+	environment.ambient_light_energy = 1.0
 	# Tonemap and glow can break transparent backgrounds in Godot 4 SubViewports
 	# environment.tonemap_mode = Environment.TONE_MAP_ACES
 	# environment.glow_enabled = true
 	world.environment = environment
 	scene_root.add_child(world)
 
-	# Key light — warm directional from top-left
+	# Kept subtle because the tile materials are intentionally flat/pixel-styled.
 	var key_light := DirectionalLight3D.new()
 	key_light.name = "Tile3DKeyLight"
-	key_light.light_energy = 2.25
-	key_light.light_color = Color(1.0, 0.93, 0.82)
+	key_light.light_energy = 0.35
+	key_light.light_color = Color(1.0, 0.92, 0.72)
 	key_light.rotation_degrees = Vector3(-48.0, -32.0, 0.0)
 	key_light.shadow_enabled = true
 	scene_root.add_child(key_light)
 
-	# Fill light — cool omni from front-right
 	var fill_light := OmniLight3D.new()
 	fill_light.name = "Tile3DFillLight"
-	fill_light.light_energy = 0.54
+	fill_light.light_energy = 0.10
 	fill_light.light_color = Color(0.82, 0.88, 1.0)
 	fill_light.omni_range = 6.0
 	fill_light.position = Vector3(1.8, 0.8, 3.2)
 	scene_root.add_child(fill_light)
 
-	# Rim light — subtle accent from below
 	var rim_light := OmniLight3D.new()
 	rim_light.name = "Tile3DRimLight"
-	rim_light.light_energy = 0.62
+	rim_light.light_energy = 0.08
 	rim_light.light_color = Color(1.0, 0.74, 0.40)
 	rim_light.omni_range = 4.0
 	rim_light.position = Vector3(-1.2, -1.1, 1.8)
@@ -210,9 +213,12 @@ func _ensure_viewport() -> void:
 	scene_root.add_child(tile_root)
 
 
-func _high_quality_viewport_size() -> Vector2i:
-	var render_scale := 4.0
-	return Vector2i(max(1024, int(size.x * render_scale)), max(256, int(size.y * render_scale)))
+func _pixel_viewport_size() -> Vector2i:
+	var screen_size := size * scale
+	return Vector2i(
+		clamp(int(screen_size.x * 0.46), 96, 320),
+		clamp(int(screen_size.y * 0.54), 48, 112)
+	)
 
 
 func _clear_tiles() -> void:

@@ -5,8 +5,8 @@ const OPENING_DRAW_SIZE := 16
 const INITIAL_HAND_SIZE := 13
 const ACTIVE_HAND_SIZE := 16
 const OPENING_DISCARD_SIZE := 3
-const DRAW_PER_TURN := 3
-const PLAY_PER_TURN := 3
+const MIN_PLAY_PER_TURN := 1
+const MAX_PLAY_PER_TURN := 3
 const ENEMY_ATTACK_INTERVAL := 3
 const DEFAULT_PLAYER_HP := 100
 const DEFAULT_ENEMY_HP := 160
@@ -53,6 +53,7 @@ var is_complete := false
 var result := BattleResult.ONGOING
 var last_event := ""
 var last_play_preview := {}
+var last_draw_count := 0
 
 
 func start_run(seed: int = 0, auto_choose_opening: bool = true) -> void:
@@ -78,6 +79,7 @@ func start_run(seed: int = 0, auto_choose_opening: bool = true) -> void:
 	result = BattleResult.ONGOING
 	last_event = "Choose 13 from 16"
 	last_play_preview.clear()
+	last_draw_count = 0
 	if auto_choose_opening:
 		var indices: Array[int] = []
 		for i in range(INITIAL_HAND_SIZE):
@@ -102,7 +104,6 @@ func choose_initial_hand(indices: Array[int]) -> Dictionary:
 			discard_pile.append(opening_choices[i])
 	opening_choices.clear()
 	hand.sort_in_place()
-	_draw_candidates()
 	last_event = "Opening kept 13, discarded 3"
 	return {"valid": true, "event": last_event}
 
@@ -123,8 +124,8 @@ func can_select(zone: int, index: int) -> bool:
 
 
 func preview_play(selections: Array) -> Dictionary:
-	if selections.size() != PLAY_PER_TURN:
-		return _invalid("play_exactly_three")
+	if not _is_valid_play_count(selections.size()):
+		return _invalid("play_one_to_three")
 	if not _selections_are_unique_and_valid(selections):
 		return _invalid("invalid_selection")
 	var tiles := _tiles_from_selections(selections)
@@ -137,12 +138,13 @@ func preview_play(selections: Array) -> Dictionary:
 func play_tiles(selections: Array) -> Dictionary:
 	if is_complete:
 		return _invalid("battle_complete")
-	if selections.size() != PLAY_PER_TURN:
-		return _invalid("play_exactly_three")
+	if not _is_valid_play_count(selections.size()):
+		return _invalid("play_one_to_three")
 	if not _selections_are_unique_and_valid(selections):
 		return _invalid("invalid_selection")
 
 	var tiles := _tiles_from_selections(selections)
+	var draw_count := tiles.size()
 	var play := classify_play(tiles)
 	var effects := _apply_play_effects(play, tiles)
 	play["effects"] = effects
@@ -158,8 +160,6 @@ func play_tiles(selections: Array) -> Dictionary:
 		scatter_ledger.append(play)
 
 	_remove_selected_tiles(selections, false)
-	for tile in drawn:
-		hand.add_tile(tile)
 	drawn.clear()
 	hand.sort_in_place()
 
@@ -173,10 +173,11 @@ func play_tiles(selections: Array) -> Dictionary:
 	_check_battle_result()
 	if not is_complete:
 		turn_number += 1
-		_draw_candidates()
+		_draw_candidates(draw_count)
 
-	last_event = "%s played: %s" % [str(play.get("name", "Set")), _effects_to_text(effects)]
-	return {"valid": true, "play": play.duplicate(true), "enemy_attack": enemy_attack_event, "event": last_event}
+	last_draw_count = draw_count
+	last_event = "%s played: %s. Draw %d next." % [str(play.get("name", "Set")), _effects_to_text(effects), draw_count]
+	return {"valid": true, "play": play.duplicate(true), "enemy_attack": enemy_attack_event, "draw_count": draw_count, "event": last_event}
 
 
 func play_meld(selections: Array) -> Dictionary:
@@ -262,6 +263,12 @@ func remaining_deck() -> int:
 
 
 static func classify_play(tiles: Array) -> Dictionary:
+	if tiles.size() == 1:
+		return {"id": "single", "name": "Single", "tile_count": 1, "open_meld": false, "tile": tiles[0]}
+	if tiles.size() == 2:
+		if tiles[0].equals_tile(tiles[1]):
+			return {"id": "pair", "name": "Pair", "tile_count": 2, "open_meld": false, "pair_tile": tiles[0]}
+		return {"id": "scattered", "name": "Scattered", "tile_count": 2, "open_meld": false}
 	if tiles.size() == 3 and PatternMatcher.is_triplet(tiles):
 		return {"id": "triplet", "name": "Triplet", "tile_count": 3, "suit": tiles[0].suit, "open_meld": true}
 	if tiles.size() == 3 and PatternMatcher.is_sequence(tiles):
@@ -279,8 +286,8 @@ static func classify_meld(tiles: Array) -> Dictionary:
 	return {}
 
 
-func _draw_candidates() -> void:
-	drawn = wall.draw(DRAW_PER_TURN)
+func _draw_candidates(count: int) -> void:
+	drawn = wall.draw(clamp(count, MIN_PLAY_PER_TURN, MAX_PLAY_PER_TURN))
 
 
 func _preview_effects(play: Dictionary, tiles: Array) -> Array[Dictionary]:
@@ -297,6 +304,10 @@ func _apply_play_effects(play: Dictionary, tiles: Array) -> Array[Dictionary]:
 func _build_effects(play: Dictionary, tiles: Array, apply: bool) -> Array[Dictionary]:
 	var id := str(play.get("id", ""))
 	match id:
+		"single":
+			return [_make_effect(_resource_for_tile(tiles[0]), BASE_EFFECT_VALUE, apply)]
+		"pair":
+			return [_make_effect(_resource_for_tile(tiles[0]), WEAK_EFFECT_VALUE, apply)]
 		"sequence":
 			return [_make_effect(_resource_for_suit(int(play.get("suit", -1))), STRONG_EFFECT_VALUE, apply)]
 		"triplet":
@@ -311,6 +322,10 @@ func _build_effects(play: Dictionary, tiles: Array, apply: bool) -> Array[Dictio
 		"scattered":
 			return []
 	return []
+
+
+func _is_valid_play_count(count: int) -> bool:
+	return count >= MIN_PLAY_PER_TURN and count <= MAX_PLAY_PER_TURN
 
 
 func _make_effect(resource: String, value: int, apply: bool) -> Dictionary:

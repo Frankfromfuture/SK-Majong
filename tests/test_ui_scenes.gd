@@ -34,8 +34,8 @@ func test_battle_scene_starts_with_thirteen_hand_tiles() -> void:
 
 	var hand_tiles := _find_nodes_by_prefix(scene, "HandTile_")
 	var draw_tiles := _find_nodes_by_prefix(scene, "DrawTile_")
-	assert_eq(hand_tiles.size(), 16, "Draw tiles should auto-merge into a 16-tile hand")
-	assert_eq(draw_tiles.size(), 0, "Draw tiles should disappear after auto-merge")
+	assert_eq(hand_tiles.size(), 13, "Battle should start with a 13-tile hand")
+	assert_eq(draw_tiles.size(), 0, "There should be no draw tiles before the first play")
 	assert_not_null(scene.find_child("HandTile3DShowcase", true, false))
 	var hand_showcase := scene.find_child("HandTile3DShowcase", true, false) as Control
 	var draw_showcase := scene.find_child("DrawTile3DShowcase", true, false) as Control
@@ -134,14 +134,14 @@ func test_battle_scene_state_initializes_correctly() -> void:
 	await wait_process_frames(2)
 
 	assert_not_null(scene.state, "DuelBattleState should be initialized")
-	assert_eq(scene.state.hand.size(), 16, "Draw candidates should auto-merge into hand")
-	assert_eq(scene.state.drawn.size(), 0, "Draw candidates should be cleared after auto-merge")
+	assert_eq(scene.state.hand.size(), 13, "Battle should start with a 13-tile hand")
+	assert_eq(scene.state.drawn.size(), 0, "No tiles should be drawn before the first play")
 	assert_eq(scene.state.discard_pile.size(), 3, "Opening should discard 3 tiles")
 	assert_eq(scene.state.turn_number, 1, "Should start at turn 1")
 	assert_false(scene.state.is_complete, "Should not be complete at start")
 
 
-func test_draw_tiles_auto_merge_into_hand_then_next_turn_repeats() -> void:
+func test_played_tile_count_controls_next_draw_and_auto_merge() -> void:
 	var scene := BattleScene.instantiate()
 	add_child_autofree(scene)
 	await wait_process_frames(2)
@@ -154,14 +154,17 @@ func test_draw_tiles_auto_merge_into_hand_then_next_turn_repeats() -> void:
 		Tile.man(5), Tile.man(5), Tile.pin(9), Tile.sou(9),
 	])
 	scene.state.drawn.clear()
-	scene.state.drawn.append_array([Tile.pin(7), Tile.pin(8), Tile.pin(9)])
 	scene._build_ui()
-	await wait_process_frames(80)
 
-	assert_eq(scene.state.hand.size(), 16)
+	scene.selected = {
+		"0:0": {"zone": DuelBattleState.TileZone.HAND, "index": 0},
+	}
+	scene._on_play_tiles_pressed()
+	await wait_process_frames(90)
+
+	assert_eq(scene.state.hand.size(), 13)
 	assert_eq(scene.state.drawn.size(), 0)
-	assert_eq(_find_nodes_by_prefix(scene, "HandTile_").size(), 16)
-	assert_eq(_find_nodes_by_prefix(scene, "DrawTile_").size(), 0)
+	assert_eq(scene.state.turn_number, 2)
 
 	scene.selected = {
 		"0:0": {"zone": DuelBattleState.TileZone.HAND, "index": 0},
@@ -171,9 +174,9 @@ func test_draw_tiles_auto_merge_into_hand_then_next_turn_repeats() -> void:
 	scene._on_play_tiles_pressed()
 	await wait_process_frames(90)
 
-	assert_eq(scene.state.hand.size(), 16)
+	assert_eq(scene.state.hand.size(), 13)
 	assert_eq(scene.state.drawn.size(), 0)
-	assert_eq(scene.state.turn_number, 2)
+	assert_eq(scene.state.turn_number, 3)
 
 
 func test_hits_button_shows_archived_and_scattered_totals() -> void:

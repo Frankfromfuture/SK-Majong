@@ -9,7 +9,7 @@ var _time := 0.0
 
 func _ready() -> void:
 	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
-	_build_ui()
+	_wire_existing_ui()
 
 
 func _process(delta: float) -> void:
@@ -23,6 +23,45 @@ func _process(delta: float) -> void:
 func setup(p_is_win: bool, p_turn_number: int) -> void:
 	is_win = p_is_win
 	turn_number = p_turn_number
+	if is_inside_tree():
+		_apply_result_state()
+
+
+func _wire_existing_ui() -> void:
+	title_label = find_child("GameOverTitle", true, false) as Label
+	subtitle_label = find_child("GameOverSubtitle", true, false) as Label
+	var play_again_button := find_child("PlayAgainButton", true, false) as Button
+	if play_again_button != null:
+		play_again_button.pressed.connect(func() -> void:
+			get_tree().change_scene_to_file("res://src/scenes/battle/battle.tscn")
+		)
+	var main_menu_button := find_child("MainMenuButton", true, false) as Button
+	if main_menu_button != null:
+		main_menu_button.pressed.connect(func() -> void:
+			get_tree().change_scene_to_file("res://src/scenes/main_menu/main.tscn")
+		)
+	_apply_result_state()
+
+
+func _apply_result_state() -> void:
+	var title_text := "VICTORY" if is_win else "DEFEAT"
+	var title_color := Color(1.0, 0.86, 0.22) if is_win else Color(1.0, 0.28, 0.18)
+	if title_label != null:
+		title_label.text = title_text
+		title_label.add_theme_color_override("font_color", title_color)
+	if subtitle_label != null:
+		subtitle_label.text = "Enemy warlord defeated!" if is_win else "Duel failed after %d turns" % turn_number
+	var round_label := find_child("RoundInfoLabel", true, false) as Label
+	if round_label != null:
+		round_label.text = "Won on turn %d" % turn_number if is_win else "Reached turn %d" % turn_number
+	var bg := find_child("GameOverBackground", true, false) as Panel
+	if bg != null:
+		bg.add_theme_stylebox_override("panel", _box(
+			Color(0.02, 0.04, 0.03) if is_win else Color(0.025, 0.018, 0.022),
+			Color(0.15, 0.08, 0.04),
+			2,
+			0
+		))
 
 
 func _build_ui() -> void:

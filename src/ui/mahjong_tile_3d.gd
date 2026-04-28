@@ -1,12 +1,12 @@
 class_name MahjongTile3D
 extends Node3D
 
-const TILE_SIZE := Vector3(0.58, 0.82, 0.16)
+const TILE_SIZE := Vector3(0.58, 0.82, 0.10)
 const FACE_SIZE := Vector2(0.48, 0.70)
-const BEVEL_WIDTH := 0.018
-const CORNER_TRIM_SIZE := 0.06
-const CORNER_RADIUS := 0.060
-const CORNER_SEGMENTS := 5
+const BEVEL_WIDTH := 0.026
+const CORNER_TRIM_SIZE := 0.048
+const CORNER_RADIUS := 0.052
+const CORNER_SEGMENTS := 1
 const FRONT_Z := TILE_SIZE.z * 0.5
 const BACK_Z := -TILE_SIZE.z * 0.5
 const FRONT_BEVEL_Z := TILE_SIZE.z * 0.34
@@ -46,12 +46,11 @@ func _process(delta: float) -> void:
 	phase += delta
 	var interaction_lift := 0.0
 	if selected:
-		interaction_lift = 0.105
-	elif hovered:
 		interaction_lift = 0.070
+	elif hovered:
+		interaction_lift = 0.046
 	position = base_position + Vector3(0.0, interaction_lift, 0.0)
-	var interaction_tilt := 4.0 if hovered and not selected else 0.0
-	rotation_degrees.y = interaction_tilt
+	rotation_degrees.y = 0.0
 
 	# Animate selection glow
 	if _glow_node != null:
@@ -72,6 +71,7 @@ func _build_mesh() -> void:
 	_glow_node = null
 	_shine_node = null
 
+	_build_pixel_drop_shadow()
 	_build_body()
 	_build_edge_band()
 	_build_back_plate()
@@ -96,6 +96,17 @@ func _build_body() -> void:
 	), FRONT_Z)
 	body.material_override = _ivory_body_material()
 	add_child(body)
+
+
+func _build_pixel_drop_shadow() -> void:
+	var shadow := MeshInstance3D.new()
+	shadow.name = "TilePixelDropShadow"
+	var quad := QuadMesh.new()
+	quad.size = Vector2(TILE_SIZE.x + 0.055, TILE_SIZE.y + 0.055)
+	shadow.mesh = quad
+	shadow.position = Vector3(0.030, -0.038, BACK_Z - 0.006)
+	shadow.material_override = _flat_alpha_material(Color(0.0, 0.0, 0.0, 0.26))
+	add_child(shadow)
 
 
 # --- Rounded side, bevel, and back surfaces ----------------------------------
@@ -141,6 +152,17 @@ func _build_back_plate() -> void:
 
 
 func _rounded_rect_points(half_size: Vector2, radius: float, segments: int) -> Array:
+	if segments <= 1:
+		return [
+			Vector2(half_size.x, half_size.y - radius),
+			Vector2(half_size.x - radius, half_size.y),
+			Vector2(-half_size.x + radius, half_size.y),
+			Vector2(-half_size.x, half_size.y - radius),
+			Vector2(-half_size.x, -half_size.y + radius),
+			Vector2(-half_size.x + radius, -half_size.y),
+			Vector2(half_size.x - radius, -half_size.y),
+			Vector2(half_size.x, -half_size.y + radius),
+		]
 	var points := []
 	var centers := [
 		Vector2(half_size.x - radius, half_size.y - radius),
@@ -272,6 +294,22 @@ func _build_face_plate() -> void:
 	face.material_override = _face_plate_material()
 	add_child(face)
 
+	_add_pixel_strip("TileFaceBorderTop", Vector3(0.0, FACE_SIZE.y * 0.5 + 0.007, FRONT_Z + 0.010), Vector2(FACE_SIZE.x + 0.028, 0.016), _pixel_border_material())
+	_add_pixel_strip("TileFaceBorderBottom", Vector3(0.0, -FACE_SIZE.y * 0.5 - 0.007, FRONT_Z + 0.010), Vector2(FACE_SIZE.x + 0.028, 0.016), _pixel_border_material())
+	_add_pixel_strip("TileFaceBorderLeft", Vector3(-FACE_SIZE.x * 0.5 - 0.007, 0.0, FRONT_Z + 0.010), Vector2(0.016, FACE_SIZE.y + 0.028), _pixel_border_material())
+	_add_pixel_strip("TileFaceBorderRight", Vector3(FACE_SIZE.x * 0.5 + 0.007, 0.0, FRONT_Z + 0.010), Vector2(0.016, FACE_SIZE.y + 0.028), _pixel_border_material())
+
+
+func _add_pixel_strip(strip_name: String, pos: Vector3, size: Vector2, mat: StandardMaterial3D) -> void:
+	var strip := MeshInstance3D.new()
+	strip.name = strip_name
+	var quad := QuadMesh.new()
+	quad.size = size
+	strip.mesh = quad
+	strip.position = pos
+	strip.material_override = mat
+	add_child(strip)
+
 
 # --- Face content (texture or Label3D fallback) ------------------------------
 
@@ -287,7 +325,7 @@ func _build_face_sprite(texture: Texture2D) -> void:
 	var face_mesh := MeshInstance3D.new()
 	face_mesh.name = "TileFaceSprite"
 	var quad := QuadMesh.new()
-	quad.size = FACE_SIZE * 0.92
+	quad.size = FACE_SIZE * 0.86
 	face_mesh.mesh = quad
 	face_mesh.position = Vector3(0.0, 0.0, FRONT_Z + 0.011)
 	face_mesh.material_override = _face_texture_material(texture)
@@ -325,7 +363,7 @@ func _build_face_label() -> void:
 func _build_corner_trims() -> void:
 	var hw := FACE_SIZE.x * 0.5 - 0.01
 	var hh := FACE_SIZE.y * 0.5 - 0.01
-	var z := FRONT_Z + 0.008
+	var z := FRONT_Z + 0.014
 
 	var corners := [
 		Vector3(-hw, hh, z),
@@ -349,11 +387,11 @@ func _build_corner_trims() -> void:
 
 func _build_shine() -> void:
 	_shine_node = MeshInstance3D.new()
-	_shine_node.name = "TileFaceShine"
+	_shine_node.name = "TilePixelHighlight"
 	var shine_quad := QuadMesh.new()
-	shine_quad.size = Vector2(0.44, 0.08)
+	shine_quad.size = Vector2(0.34, 0.018)
 	_shine_node.mesh = shine_quad
-	_shine_node.position = Vector3(0.0, 0.26, FRONT_Z + 0.018)
+	_shine_node.position = Vector3(-0.030, 0.260, FRONT_Z + 0.018)
 	_shine_node.material_override = _shine_material()
 	add_child(_shine_node)
 
@@ -364,9 +402,9 @@ func _build_interaction_glow() -> void:
 	_glow_node = MeshInstance3D.new()
 	_glow_node.name = "TileSelectedGlow" if selected else "TileHoverGlow"
 	var glow_quad := QuadMesh.new()
-	glow_quad.size = Vector2(0.68, 0.92)
+	glow_quad.size = Vector2(0.66, 0.90)
 	_glow_node.mesh = glow_quad
-	_glow_node.position = Vector3(0.0, 0.0, FRONT_Z + 0.002)
+	_glow_node.position = Vector3(0.0, 0.0, FRONT_Z + 0.001)
 	_glow_node.material_override = _glow_material(Color(1.0, 0.48, 0.12), Color(1.0, 0.72, 0.18)) if selected else _glow_material(Color(0.60, 1.0, 0.82), Color(0.28, 1.0, 0.68))
 	add_child(_glow_node)
 
@@ -375,26 +413,27 @@ func _build_interaction_glow() -> void:
 
 func _ivory_body_material() -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.93, 0.86, 0.66)
-	mat.roughness = 0.44
-	mat.metallic = 0.02
+	mat.albedo_color = Color(0.90, 0.82, 0.58)
+	mat.roughness = 0.82
+	mat.metallic = 0.0
 	mat.emission_enabled = true
-	mat.emission = Color(0.18, 0.09, 0.02)
-	mat.emission_energy_multiplier = 0.06
-	mat.specular_mode = BaseMaterial3D.SPECULAR_SCHLICK_GGX
-	_apply_normal_texture(mat, 0.18)
+	mat.emission = Color(0.90, 0.72, 0.38)
+	mat.emission_energy_multiplier = 0.08
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	return mat
 
 
 func _face_plate_material() -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.99, 0.94, 0.76)
-	mat.roughness = 0.24
-	mat.metallic = 0.02
+	mat.albedo_color = Color(1.0, 0.92, 0.66)
+	mat.roughness = 0.90
+	mat.metallic = 0.0
 	mat.emission_enabled = true
-	mat.emission = Color(0.08, 0.04, 0.01)
-	mat.emission_energy_multiplier = 0.04
-	_apply_normal_texture(mat, 0.10)
+	mat.emission = Color(1.0, 0.82, 0.44)
+	mat.emission_energy_multiplier = 0.10
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	return mat
 
 
@@ -402,74 +441,110 @@ func _face_texture_material(texture: Texture2D) -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = Color.WHITE
 	mat.albedo_texture = texture
-	mat.roughness = 0.18
+	mat.roughness = 0.90
 	mat.metallic = 0.0
 	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	return mat
 
 
 func _bevel_material() -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.76, 0.54, 0.25)
-	mat.roughness = 0.30
-	mat.metallic = 0.58
+	mat.albedo_color = Color(0.30, 0.52, 0.34)
+	mat.roughness = 0.88
+	mat.metallic = 0.0
 	mat.emission_enabled = true
-	mat.emission = Color(0.22, 0.12, 0.04)
-	mat.emission_energy_multiplier = 0.04
+	mat.emission = Color(0.06, 0.20, 0.10)
+	mat.emission_energy_multiplier = 0.05
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	_apply_normal_texture(mat, 0.08)
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	return mat
 
 
 func _back_material() -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.06, 0.28, 0.20)
-	mat.roughness = 0.36
-	mat.metallic = 0.04
+	mat.albedo_color = Color(0.08, 0.28, 0.18)
+	mat.roughness = 0.86
+	mat.metallic = 0.0
 	mat.emission_enabled = true
-	mat.emission = Color(0.0, 0.09, 0.05)
-	mat.emission_energy_multiplier = 0.03
+	mat.emission = Color(0.02, 0.12, 0.06)
+	mat.emission_energy_multiplier = 0.05
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	_apply_normal_texture(mat, 0.35)
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	return mat
 
 
 func _corner_trim_material() -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.82, 0.58, 0.22, 0.72)
-	mat.roughness = 0.28
-	mat.metallic = 0.62
+	mat.albedo_color = Color(0.28, 0.46, 0.30, 0.92)
+	mat.roughness = 0.90
+	mat.metallic = 0.0
 	mat.emission_enabled = true
-	mat.emission = Color(0.68, 0.42, 0.08)
-	mat.emission_energy_multiplier = 0.10
+	mat.emission = Color(0.06, 0.18, 0.08)
+	mat.emission_energy_multiplier = 0.07
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.no_depth_test = true
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	return mat
 
 
 func _shine_material() -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(1.0, 0.96, 0.74, 0.18)
-	mat.roughness = 0.05
-	mat.metallic = 0.15
-	mat.emission_enabled = false
+	mat.albedo_color = Color(1.0, 1.0, 0.78, 0.40)
+	mat.roughness = 0.90
+	mat.metallic = 0.0
+	mat.emission_enabled = true
+	mat.emission = Color(1.0, 0.82, 0.30)
+	mat.emission_energy_multiplier = 0.10
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.no_depth_test = true
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	return mat
 
 
 func _glow_material(albedo: Color, emission: Color) -> StandardMaterial3D:
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = Color(albedo.r, albedo.g, albedo.b, 0.38)
-	mat.roughness = 0.06
-	mat.metallic = 0.18
+	mat.roughness = 0.90
+	mat.metallic = 0.0
 	mat.emission_enabled = true
 	mat.emission = emission
-	mat.emission_energy_multiplier = 0.22
+	mat.emission_energy_multiplier = 0.16
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.no_depth_test = true
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	return mat
+
+
+func _pixel_border_material() -> StandardMaterial3D:
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.23, 0.38, 0.24)
+	mat.roughness = 0.90
+	mat.metallic = 0.0
+	mat.emission_enabled = true
+	mat.emission = Color(0.05, 0.12, 0.04)
+	mat.emission_energy_multiplier = 0.06
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	return mat
+
+
+func _flat_alpha_material(color: Color) -> StandardMaterial3D:
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = color
+	mat.roughness = 1.0
+	mat.metallic = 0.0
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.no_depth_test = false
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	return mat
 
 

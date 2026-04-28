@@ -1,8 +1,88 @@
-[gd_scene format=3 uid="uid://bsf7vxh2ygkrc"]
+[gd_scene format=3]
 
 [ext_resource type="Script" path="res://src/scenes/game_over/game_over.gd" id="1_gameover"]
 
-[node name="GameOver" type="Control"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xgr1h"]
+bg_color = Color(0.025, 0.018, 0.022, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.15, 0.08, 0.04, 1)
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rhbjs"]
+bg_color = Color(0.08, 0.1, 0.08, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.78, 0.42, 0.12, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a6ymo"]
+bg_color = Color(0.45, 0.09, 0.05, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8, 0.42, 0.12, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_go1yo"]
+bg_color = Color(0.66, 0.13, 0.07, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.72, 0.18, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jhlts"]
+bg_color = Color(0.45, 0.09, 0.05, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8, 0.42, 0.12, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1ry86"]
+bg_color = Color(0.66, 0.13, 0.07, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.72, 0.18, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 4
+
+[node name="GameOver" type="Control" unique_id=880432043]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -10,3 +90,108 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_gameover")
+
+[node name="GameOverRoot" type="Control" parent="." unique_id=1157353073]
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="GameOverBackground" type="Panel" parent="GameOverRoot" unique_id=446642958]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_xgr1h")
+
+[node name="ResultPanel" type="Panel" parent="GameOverRoot" unique_id=2092952639]
+layout_mode = 0
+offset_left = 170.0
+offset_top = 80.0
+offset_right = 470.0
+offset_bottom = 280.0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_rhbjs")
+
+[node name="GameOverTitle" type="Label" parent="GameOverRoot" unique_id=804299883]
+layout_mode = 0
+offset_left = 170.0
+offset_top = 100.0
+offset_right = 470.0
+offset_bottom = 150.0
+theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(1, 0.28, 0.18, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.72)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+text = "DEFEAT"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="GameOverSubtitle" type="Label" parent="GameOverRoot" unique_id=1634573943]
+layout_mode = 0
+offset_left = 170.0
+offset_top = 155.0
+offset_right = 470.0
+offset_bottom = 179.0
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.78, 0.92, 0.78, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.72)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+text = "Duel failed after 0 turns"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RoundInfoLabel" type="Label" parent="GameOverRoot" unique_id=772349335]
+layout_mode = 0
+offset_left = 170.0
+offset_top = 190.0
+offset_right = 470.0
+offset_bottom = 213.0
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.62, 0.65, 0.62, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.72)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+text = "Reached turn 0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlayAgainButton" type="Button" parent="GameOverRoot" unique_id=281246835]
+layout_mode = 0
+offset_left = 220.0
+offset_top = 228.0
+offset_right = 321.0
+offset_bottom = 259.0
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_a6ymo")
+theme_override_styles/hover = SubResource("StyleBoxFlat_go1yo")
+theme_override_font_sizes/font_size = 11
+text = "PLAY AGAIN"
+
+[node name="MainMenuButton" type="Button" parent="GameOverRoot" unique_id=2030280234]
+layout_mode = 0
+offset_left = 330.0
+offset_top = 228.0
+offset_right = 434.0
+offset_bottom = 259.0
+focus_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_jhlts")
+theme_override_styles/hover = SubResource("StyleBoxFlat_1ry86")
+theme_override_font_sizes/font_size = 11
+text = "MAIN MENU"
+
+[node name="SealCharacter" type="Label" parent="GameOverRoot" unique_id=68422703]
+layout_mode = 0
+offset_left = 292.0
+offset_top = 296.0
+offset_right = 348.0
+offset_bottom = 340.0
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.98, 0.78, 0.28, 0.42)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.72)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+text = "漢"
+horizontal_alignment = 1
+vertical_alignment = 1

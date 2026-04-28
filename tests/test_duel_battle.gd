@@ -5,11 +5,11 @@ const HandScript = preload("res://src/core/hand.gd")
 const TileScript = preload("res://src/core/tile.gd")
 
 
-func test_duel_auto_keeps_13_from_opening_16_and_draws_3() -> void:
+func test_duel_auto_keeps_13_from_opening_16_without_initial_draw() -> void:
 	var state := _make_state()
 
 	assert_eq(state.hand.size(), 13)
-	assert_eq(state.drawn.size(), 3)
+	assert_eq(state.drawn.size(), 0)
 	assert_eq(state.discard_pile.size(), 3)
 	assert_eq(state.player_hp, 100)
 	assert_eq(state.enemy_hp, 160)
@@ -27,8 +27,9 @@ func test_play_sequence_records_open_meld_and_sou_deals_damage() -> void:
 	assert_eq(state.open_melds[0].get("id", ""), "sequence")
 	assert_eq(state.open_melds[0].get("effect_type", ""), "damage")
 	assert_eq(state.enemy_hp, 130)
-	assert_eq(state.hand.size(), 13)
+	assert_eq(state.hand.size(), 10)
 	assert_eq(state.drawn.size(), 3)
+	assert_eq(result.get("draw_count", 0), 3)
 
 
 func test_man_triplet_adds_money() -> void:
@@ -80,6 +81,19 @@ func test_pair_plus_single_triggers_weak_pair_and_base_single() -> void:
 	assert_eq(state.open_melds.size(), 0)
 
 
+func test_pair_play_draws_two_and_triggers_weak_effect() -> void:
+	var state := _make_state()
+	_set_hand(state, [m(4), m(4), s(9), p(1), p(2), p(3), s(1), s(2), s(3), m(5), m(5), p(9), e()])
+
+	var result := state.play_tiles([_hand(0), _hand(1)])
+
+	assert_true(result.get("valid", false))
+	assert_eq(result.get("play", {}).get("id", ""), "pair")
+	assert_eq(result.get("draw_count", 0), 2)
+	assert_eq(state.money, 20)
+	assert_eq(state.drawn.size(), 2)
+
+
 func test_scattered_records_without_scoring_effects() -> void:
 	var state := _make_state()
 	_set_hand(state, [s(1), m(5), p(9), p(1), p(2), p(3), s(3), s(4), s(5), m(7), m(7), e(), TileScript.white()])
@@ -94,16 +108,24 @@ func test_scattered_records_without_scoring_effects() -> void:
 	assert_eq(state.scatter_ledger.size(), 1)
 
 
-func test_play_three_refills_hand_to_13_and_advances_turn() -> void:
+func test_play_count_sets_next_draw_count_and_advances_turn() -> void:
 	var state := _make_state()
 
-	var result := state.play_tiles(_draw_three())
+	var result := state.play_tiles([_hand(0)])
 
 	assert_true(result.get("valid", false))
-	assert_eq(state.hand.size(), 13)
-	assert_eq(state.drawn.size(), 3)
+	assert_eq(result.get("play", {}).get("id", ""), "single")
+	assert_eq(result.get("draw_count", 0), 1)
+	assert_eq(state.hand.size(), 12)
+	assert_eq(state.drawn.size(), 1)
 	assert_eq(state.turn_number, 2)
 	assert_eq(state.player_turns_taken, 1)
+
+	result = state.play_tiles([_hand(0), _hand(1)])
+
+	assert_true(result.get("valid", false))
+	assert_eq(result.get("draw_count", 0), 2)
+	assert_eq(state.drawn.size(), 2)
 
 
 func test_enemy_attacks_every_three_player_turns() -> void:

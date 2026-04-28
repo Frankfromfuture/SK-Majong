@@ -57,6 +57,8 @@ var _draw_fade_tween: Tween
 var _editor_refresh_cooldown := 0.0
 var _last_guide_signature := ""
 var _is_building_editor_preview := false
+var _bg_time := 0.0
+var _bg_sparkles: Array[ColorRect] = []
 
 
 func _ready() -> void:
@@ -72,6 +74,8 @@ func _process(delta: float) -> void:
 			_finish_auto_draw_merge(_draw_merge_generation)
 	elif _should_auto_merge_draw():
 		_start_auto_draw_merge()
+
+	_animate_bg_sparkles(delta)
 
 	if not Engine.is_editor_hint():
 		return
@@ -94,7 +98,7 @@ func _start_new_run() -> void:
 	selected.clear()
 	hovered.clear()
 	_build_ui()
-	_set_status("Opening auto-kept 13 from 16. Draw 3, play exactly 3.")
+	_set_status("Opening auto-kept 13 from 16. Play 1-3 tiles. Next draw equals played count.")
 
 
 func _build_ui() -> void:
@@ -116,16 +120,29 @@ func _build_ui() -> void:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
 
-	_panel(root, "BattleBackground", _guide_rect("BattleBackground", Rect2(0, 0, 640, 360)), Color(0.035, 0.023, 0.026))
-	_panel(root, "LeftStatusPanel", _guide_rect("LeftStatusPanel", Rect2(8, 12, 120, 90)), Color(0.10, 0.14, 0.12))
-	_panel(root, "PlayerWarlordRail", _guide_rect("PlayerWarlordRail", Rect2(8, 108, 120, 180)), Color(0.09, 0.12, 0.11))
-	_panel(root, "RevealAreaPanel", _guide_rect("RevealAreaPanel", Rect2(136, 74, 348, 150)), Color(0.075, 0.052, 0.045))
-	_panel(root, "EnemyPanel", _guide_rect("EnemyPanel", Rect2(492, 34, 138, 86)), Color(0.13, 0.08, 0.07))
-	_panel(root, "RightSupportPanel", _guide_rect("RightSupportPanel", Rect2(492, 126, 138, 162)), Color(0.08, 0.11, 0.10))
-	_panel(root, "BottomActionPanel", _guide_rect("BottomActionPanel", Rect2(136, 230, 348, 58)), Color(0.07, 0.07, 0.065, 0.88))
-	_panel(root, "HandTrayPanel", _guide_rect("HandTrayPanel", Rect2(8, 296, 560, 56)), Color(0.055, 0.052, 0.048))
+	# Add background image
+	var bg_tex := TextureRect.new()
+	bg_tex.name = "BattleBackgroundImage"
+	bg_tex.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg_tex.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg_tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	
+	var bg_path := "res://assets/sprites/backgrounds/battle_bg.png"
+	if FileAccess.file_exists(bg_path):
+		bg_tex.texture = load(bg_path)
+	
+	root.add_child(bg_tex)
 
-	_build_stage_header(root)
+	_panel(root, "BattleBackground", _guide_rect("BattleBackground", Rect2(0, 0, 640, 360)), Color(0, 0, 0, 0))
+	_panel(root, "LeftStatusPanel", _guide_rect("LeftStatusPanel", Rect2(8, 12, 120, 90)), Color(0, 0, 0, 0))
+	_panel(root, "PlayerWarlordRail", _guide_rect("PlayerWarlordRail", Rect2(8, 108, 120, 180)), Color(0, 0, 0, 0))
+	_panel(root, "RevealAreaPanel", _guide_rect("RevealAreaPanel", Rect2(136, 74, 348, 150)), Color(0, 0, 0, 0))
+	_panel(root, "EnemyPanel", _guide_rect("EnemyPanel", Rect2(492, 34, 138, 86)), Color(0, 0, 0, 0))
+	_panel(root, "RightSupportPanel", _guide_rect("RightSupportPanel", Rect2(492, 126, 138, 162)), Color(0, 0, 0, 0))
+	_panel(root, "BottomActionPanel", _guide_rect("BottomActionPanel", Rect2(136, 230, 348, 58)), Color(0, 0, 0, 0))
+	_panel(root, "HandTrayPanel", _guide_rect("HandTrayPanel", Rect2(8, 296, 560, 56)), Color(0, 0, 0, 0))
+
+	_build_battle_header(root)
 	_build_left_status(root)
 	_build_future_bars(root)
 	_build_reveal_area(root)
@@ -134,6 +151,7 @@ func _build_ui() -> void:
 	_build_tile_rows(root)
 	_build_tile_wall(root)
 	_build_buttons(root)
+	_build_bg_sparkles(root)
 	_update_hud()
 	if _should_auto_merge_draw():
 		_start_auto_draw_merge()
@@ -143,14 +161,9 @@ func _build_ui() -> void:
 	_is_building_editor_preview = false
 
 
-func _build_stage_header(parent: Control) -> void:
-	_panel(parent, "StageNameBadge", Rect2(228, 8, 184, 24), Color(0.13, 0.17, 0.13))
-	_label(parent, "StageNameBadgeText", "1-1 TRAINING", Rect2(238, 10, 164, 20), 13, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
-	_panel(parent, "TurnBarPanel", Rect2(240, 38, 160, 22), Color(0.10, 0.13, 0.12))
+func _build_battle_header(parent: Control) -> void:
+	_panel(parent, "TurnBarPanel", Rect2(240, 38, 160, 22), Color(0, 0, 0, 0))
 	round_value = _label(parent, "RoundValue", "", Rect2(254, 40, 132, 18), 10, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
-	_label(parent, "StageTypeIcon", "DUEL", Rect2(166, 12, 48, 16), 8, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
-	_label(parent, "StageModifierLabel", "No modifier", Rect2(416, 12, 78, 16), 7, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
-	_label(parent, "StageRewardPreview", "Reward preview", Rect2(416, 30, 78, 14), 6, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
 	_button(parent, "PatternToggleButton", "RULES", Rect2(582, 264, 46, 20), _on_rules_pressed)
 
 
@@ -164,21 +177,27 @@ func _build_left_status(parent: Control) -> void:
 
 
 func _build_future_bars(parent: Control) -> void:
-	_panel(parent, "WarlordBar", Rect2(16, 116, 104, 160), Color(0.18, 0.20, 0.18, 0.72))
-	for i in range(3):
-		var y := 124 + i * 50
-		_slot(parent, "WarlordSlot_%02d" % i, Rect2(22, y, 36, 36), "4.0")
-		_label(parent, "WarlordPortrait_%02d" % i, "?", Rect2(22, y, 36, 24), 13, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
-		_label(parent, "WarlordNameLabel_%02d" % i, "Hero", Rect2(20, y + 25, 40, 9), 5, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
-		_slot(parent, "WarlordTriggerGlow_%02d" % i, Rect2(20, y - 2, 40, 40), "Glow")
-		_slot(parent, "WeaponSlot_%02d_A" % i, Rect2(66, y + 2, 18, 16), "4.0")
-		_slot(parent, "WeaponSlot_%02d_B" % i, Rect2(88, y + 2, 18, 16), "4.0")
-		_label(parent, "WeaponIcon_%02d_A" % i, "W", Rect2(66, y + 2, 18, 16), 6, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
-		_label(parent, "WeaponIcon_%02d_B" % i, "W", Rect2(88, y + 2, 18, 16), 6, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
-		_slot(parent, "WeaponMarkOverlay_%02d_A" % i, Rect2(65, y + 1, 20, 18), "Mark")
-		_slot(parent, "WeaponMarkOverlay_%02d_B" % i, Rect2(87, y + 1, 20, 18), "Mark")
+	# --- Single Warlord Card (1 warlord + 2 weapons) ---
+	_panel(parent, "WarlordBar", Rect2(16, 116, 104, 110), Color(0, 0, 0, 0))
 
-	_panel(parent, "FlowerSeasonBuffBar", Rect2(500, 134, 122, 58), Color(0.18, 0.20, 0.18, 0.72))
+	# Warlord portrait (larger, centered)
+	_slot(parent, "WarlordSlot_00", Rect2(32, 122, 52, 52), "portrait")
+	_label(parent, "WarlordPortrait_00", "将", Rect2(32, 122, 52, 38), 22, Color(0.72, 0.74, 0.70), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "WarlordNameLabel_00", "WARLORD", Rect2(20, 162, 80, 9), 5, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
+	_slot(parent, "WarlordTriggerGlow_00", Rect2(30, 120, 56, 56), "Glow")
+
+	# Weapon slots — side by side beneath portrait
+	_slot(parent, "WeaponSlot_A", Rect2(26, 177, 40, 28), "weapon")
+	_label(parent, "WeaponIcon_A", "⚔", Rect2(26, 179, 40, 18), 9, Color(0.82, 0.70, 0.38), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "WeaponName_A", "WEAPON", Rect2(24, 196, 44, 7), 4, Color(0.60, 0.62, 0.58), HORIZONTAL_ALIGNMENT_CENTER)
+	_slot(parent, "WeaponMarkOverlay_A", Rect2(25, 176, 42, 30), "Mark")
+
+	_slot(parent, "WeaponSlot_B", Rect2(72, 177, 40, 28), "weapon")
+	_label(parent, "WeaponIcon_B", "🛡", Rect2(72, 179, 40, 18), 9, Color(0.38, 0.70, 0.88), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "WeaponName_B", "ARMOR", Rect2(70, 196, 44, 7), 4, Color(0.60, 0.62, 0.58), HORIZONTAL_ALIGNMENT_CENTER)
+	_slot(parent, "WeaponMarkOverlay_B", Rect2(71, 176, 42, 30), "Mark")
+
+	_panel(parent, "FlowerSeasonBuffBar", Rect2(500, 134, 122, 58), Color(0, 0, 0, 0))
 	_label(parent, "FlowerSeasonBuffTitle", "SEASON / FLOWER", Rect2(506, 138, 110, 12), 8, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
 	for i in range(8):
 		var x := 508 + (i % 4) * 27
@@ -190,7 +209,7 @@ func _build_future_bars(parent: Control) -> void:
 		else:
 			_label(parent, "BuffIcon_Season_%s" % SEASON_BUFFS[i - FLOWER_BUFFS.size()], "S", Rect2(x, y - 9, 20, 9), 5, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
 
-	_panel(parent, "ConsumableBar", Rect2(500, 202, 122, 52), Color(0.18, 0.20, 0.18, 0.72))
+	_panel(parent, "ConsumableBar", Rect2(500, 202, 122, 52), Color(0, 0, 0, 0))
 	_label(parent, "ConsumableBarTitle", "ITEMS", Rect2(506, 206, 110, 12), 8, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
 	for i in range(3):
 		var x := 512 + i * 34
@@ -200,32 +219,32 @@ func _build_future_bars(parent: Control) -> void:
 
 func _build_reveal_area(parent: Control) -> void:
 	_label(parent, "RevealAreaTitle", "BATTLE", Rect2(146, 82, 328, 16), 13, Color.CYAN, HORIZONTAL_ALIGNMENT_CENTER)
-	_panel(parent, "PlayerConditionPanel", Rect2(146, 100, 92, 16), Color(0.10, 0.13, 0.12))
+	_panel(parent, "PlayerConditionPanel", Rect2(146, 100, 92, 16), Color(0, 0, 0, 0))
 	_label(parent, "PlayerConditionValue", "Condition", Rect2(150, 101, 84, 14), 7, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
-	_panel(parent, "EnemyConditionPanel", Rect2(382, 100, 92, 16), Color(0.10, 0.13, 0.12))
+	_panel(parent, "EnemyConditionPanel", Rect2(382, 100, 92, 16), Color(0, 0, 0, 0))
 	_label(parent, "EnemyConditionValue", "Condition", Rect2(386, 101, 84, 14), 7, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
-	_panel(parent, "AllyUnit_00", Rect2(164, 146, 32, 28), Color(0.07, 0.16, 0.11, 0.78))
+	_panel(parent, "AllyUnit_00", Rect2(164, 146, 32, 28), Color(0, 0, 0, 0))
 	_label(parent, "AllyUnitLabel_00", "P1", Rect2(164, 147, 32, 18), 10, Color(0.68, 1.0, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
-	_panel(parent, "AllyUnit_01", Rect2(218, 126, 32, 28), Color(0.07, 0.16, 0.11, 0.78))
+	_panel(parent, "AllyUnit_01", Rect2(218, 126, 32, 28), Color(0, 0, 0, 0))
 	_label(parent, "AllyUnitLabel_01", "P2", Rect2(218, 127, 32, 18), 10, Color(0.68, 1.0, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
-	_panel(parent, "AllyUnit_02", Rect2(272, 146, 32, 28), Color(0.07, 0.16, 0.11, 0.78))
+	_panel(parent, "AllyUnit_02", Rect2(272, 146, 32, 28), Color(0, 0, 0, 0))
 	_label(parent, "AllyUnitLabel_02", "P3", Rect2(272, 147, 32, 18), 10, Color(0.68, 1.0, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
-	_panel(parent, "EnemyWarlordUnit", Rect2(404, 134, 42, 34), Color(0.18, 0.08, 0.06, 0.82))
+	_panel(parent, "EnemyWarlordUnit", Rect2(404, 134, 42, 34), Color(0, 0, 0, 0))
 	_label(parent, "EnemyUnitSprite", "EN", Rect2(404, 136, 42, 22), 11, Color(1.0, 0.48, 0.36), HORIZONTAL_ALIGNMENT_CENTER)
-	_panel(parent, "EnemyIntentBox", Rect2(370, 174, 104, 34), Color(0.13, 0.08, 0.07))
+	_panel(parent, "EnemyIntentBox", Rect2(370, 174, 104, 34), Color(0, 0, 0, 0))
 	_label(parent, "EnemyIntentBoxValue", "ATK %d\nDEF 30" % state.enemy_attack, Rect2(376, 176, 92, 28), 9, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
 	pattern_burst_label = _label(parent, "PatternBurstLabel", "", Rect2(166, 114, 288, 28), 21, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
-	_panel(parent, "ConcealedMeldHintPanel", Rect2(146, 208, 78, 14), Color(0.10, 0.13, 0.12))
+	_panel(parent, "ConcealedMeldHintPanel", Rect2(146, 208, 78, 14), Color(0, 0, 0, 0))
 	_label(parent, "ConcealedMeldHintValue", "Dark %d" % _concealed_hint_count(), Rect2(150, 208, 70, 12), 6, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
-	_panel(parent, "PairCandidateHintPanel", Rect2(230, 208, 66, 14), Color(0.10, 0.13, 0.12))
+	_panel(parent, "PairCandidateHintPanel", Rect2(230, 208, 66, 14), Color(0, 0, 0, 0))
 	_label(parent, "PairCandidateHintValue", "Pairs %d" % _pair_hint_count(), Rect2(234, 208, 58, 12), 6, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
-	_panel(parent, "ShantenBadge", Rect2(302, 208, 56, 14), Color(0.10, 0.13, 0.12))
+	_panel(parent, "ShantenBadge", Rect2(302, 208, 56, 14), Color(0, 0, 0, 0))
 	_label(parent, "ShantenValue", "Ready" if state.can_ultimate_win() else "Build", Rect2(306, 208, 48, 12), 6, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
-	_panel(parent, "WinMultiplierBadge", Rect2(364, 208, 62, 14), Color(0.10, 0.13, 0.12))
+	_panel(parent, "WinMultiplierBadge", Rect2(364, 208, 62, 14), Color(0, 0, 0, 0))
 	_label(parent, "WinMultiplierValue", "x%.2f" % state.current_win_multiplier(), Rect2(368, 208, 54, 12), 6, Color(1.0, 0.42, 0.32), HORIZONTAL_ALIGNMENT_CENTER)
 	mode_value = _label(parent, "ModeValue", "", Rect2(146, 232, 328, 12), 8, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
 	status_value = _label(parent, "StatusValue", "", Rect2(146, 244, 328, 10), 8, Color(0.78, 1.0, 0.76), HORIZONTAL_ALIGNMENT_CENTER)
-	_label(parent, "DrawLabel", "MELD / DRAW 3", Rect2(146, 254, 100, 12), 8, Color.CYAN)
+	_label(parent, "DrawLabel", "MELD / DRAW 1-3", Rect2(146, 254, 100, 12), 8, Color.CYAN)
 	_label(parent, "HandLabel", "HAND", Rect2(16, 286, 80, 10), 8, Color.CYAN)
 
 
@@ -241,7 +260,7 @@ func _build_enemy_panel(parent: Control) -> void:
 
 
 func _build_played_meld_ledger(parent: Control) -> void:
-	_panel(parent, "OpenMeldLedgerPanel", Rect2(210, 252, 116, 32), Color(0.08, 0.11, 0.10))
+	_panel(parent, "OpenMeldLedgerPanel", Rect2(210, 252, 116, 32), Color(0, 0, 0, 0))
 	_label(parent, "OpenMeldLedgerTitle", "OPEN MELDS", Rect2(216, 254, 104, 10), 7, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
 	played_meld_layer = Control.new()
 	played_meld_layer.name = "OpenMeldLedgerList"
@@ -299,7 +318,7 @@ func _build_tile_rows(parent: Control) -> void:
 
 func _build_tile_wall(parent: Control) -> void:
 	var wall_rect := _guide_rect("TileWallPanel", Rect2(574, 296, 58, 56))
-	_panel(parent, "TileWallPanel", wall_rect, Color(0.08, 0.11, 0.10))
+	_panel(parent, "TileWallPanel", wall_rect, Color(0, 0, 0, 0))
 	_label(parent, "TileWallLabel", "WALL", Rect2(578, 299, 50, 10), 7, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
 	for i in range(10):
 		var col := i % 5
@@ -525,7 +544,7 @@ func _finish_auto_draw_merge(generation: int) -> void:
 	state.accept_drawn_into_hand()
 	_is_auto_merging_draw = false
 	_build_ui()
-	_set_status("Draw merged into hand. Select 3 tiles to play.")
+	_set_status("Draw merged into hand. Select 1-3 tiles to play.")
 
 
 func _animate_draw_into_hand(generation: int) -> void:
@@ -680,8 +699,8 @@ func _update_hud() -> void:
 	if mirror != null:
 		mirror.text = "HP %d / ATK %d" % [state.enemy_hp, state.enemy_attack]
 
-	mode_value.text = "Select exactly 3 tiles. Triplet > Sequence > Pair+Single > Scattered. Selected: %d" % selected.size()
-	play_tiles_button.disabled = _is_auto_merging_draw or _is_resolving_turn or state.is_complete or selected.size() != DuelBattleState.PLAY_PER_TURN
+	mode_value.text = "Select 1-3 tiles. Single > Pair > Triplet > Sequence. Selected: %d" % selected.size()
+	play_tiles_button.disabled = _is_auto_merging_draw or _is_resolving_turn or state.is_complete or selected.size() < DuelBattleState.MIN_PLAY_PER_TURN or selected.size() > DuelBattleState.MAX_PLAY_PER_TURN
 	ultimate_button.disabled = _is_auto_merging_draw or _is_resolving_turn or state.is_complete or not state.can_ultimate_win()
 
 	if state.result == DuelBattleState.BattleResult.WIN:
@@ -711,8 +730,8 @@ func _reason_to_text(reason: String) -> String:
 	match reason:
 		"battle_complete":
 			return "Battle is already complete"
-		"play_exactly_three":
-			return "Select exactly 3 tiles to play"
+		"play_one_to_three":
+			return "Select 1 to 3 tiles to play"
 		"not_a_meld":
 			return "Selected tiles are not a sequence, triplet, or kan"
 		"not_ready":
@@ -742,16 +761,15 @@ func _pair_hint_count() -> int:
 
 func _metric(parent: Control, node_name: String, label_text: String, value_text: String, rect: Rect2) -> void:
 	rect = _guide_rect(node_name, rect, "panel")
-	_panel(parent, node_name, rect, Color(0.10, 0.13, 0.12))
+	_panel(parent, node_name, rect, Color(0, 0, 0, 0))
 	_label(parent, "%sLabel" % node_name, label_text, Rect2(rect.position.x, rect.position.y + 3, rect.size.x, 10), 7, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
 	if not value_text.is_empty():
 		_label(parent, "%sValueText" % node_name, value_text, Rect2(rect.position.x, rect.position.y + 15, rect.size.x, 12), 8, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
 
 
-func _slot(parent: Control, node_name: String, rect: Rect2, stage_text: String) -> void:
+func _slot(parent: Control, node_name: String, rect: Rect2, _unused_slot_text: String) -> void:
 	rect = _guide_rect(node_name, rect, "slot")
-	_panel(parent, node_name, rect, Color(0.18, 0.20, 0.18, 0.72))
-	_label(parent, "%sStage" % node_name, stage_text, rect, 5, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+	_panel(parent, node_name, rect, Color(0, 0, 0, 0))
 
 
 func _button(parent: Control, node_name: String, text: String, rect: Rect2, callback: Callable) -> Button:
@@ -866,3 +884,44 @@ func _guide_signature() -> String:
 		])
 	parts.sort()
 	return "|".join(parts)
+
+
+func _build_bg_sparkles(parent: Control) -> void:
+	_bg_sparkles.clear()
+	var sparkle_layer := Control.new()
+	sparkle_layer.name = "BackgroundSparkleLayer"
+	sparkle_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	sparkle_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	parent.add_child(sparkle_layer)
+	
+	# Move behind UI but in front of background image
+	parent.move_child(sparkle_layer, 1)
+
+	for i in range(15):
+		var spark := ColorRect.new()
+		spark.name = "BgSpark_%02d" % i
+		spark.position = Vector2(randf() * 640.0, randf() * 360.0)
+		spark.size = Vector2(1.5, 1.5)
+		# Warm sunset colors or cool mountain colors
+		spark.color = Color(1.0, 0.8, 0.3, 0.6) if i % 2 == 0 else Color(0.6, 0.9, 1.0, 0.4)
+		sparkle_layer.add_child(spark)
+		_bg_sparkles.append(spark)
+
+
+func _animate_bg_sparkles(delta: float) -> void:
+	_bg_time += delta
+	for i in range(_bg_sparkles.size()):
+		var spark := _bg_sparkles[i]
+		if not is_instance_valid(spark): continue
+		
+		# Gentle drift
+		spark.position.x += (5.0 + (i % 3) * 2.0) * delta
+		spark.position.y += sin(_bg_time * 0.5 + i) * 0.1
+		
+		# Pulsing transparency
+		spark.modulate.a = 0.2 + (sin(_bg_time * 2.0 + i * 1.5) + 1.0) * 0.4
+		
+		# Wrap around screen
+		if spark.position.x > 650.0:
+			spark.position.x = -10.0
+			spark.position.y = randf() * 360.0

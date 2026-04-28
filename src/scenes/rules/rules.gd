@@ -18,7 +18,9 @@ const PATTERN_ROWS := [
 
 func _ready() -> void:
 	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
-	_build_ui()
+	var back_button := find_child("RulesBackButton", true, false) as Button
+	if back_button != null:
+		back_button.pressed.connect(_on_back_pressed)
 
 
 func _build_ui() -> void:

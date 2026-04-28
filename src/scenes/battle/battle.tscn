@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://dgmg4r6kq552m"]
 
-[ext_resource type="Script" path="res://src/scenes/battle/battle.gd" id="1_battle"]
+[ext_resource type="Script" uid="uid://bxqq3j8krj6w1" path="res://src/scenes/battle/battle.gd" id="1_battle"]
 
-[node name="Battle" type="Control"]
+[node name="Battle" type="Control" unique_id=795043858]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,8 +11,8 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_battle")
 
-[node name="BattleLayout" type="Control" parent="."]
-layout_mode = 3
+[node name="BattleLayout" type="Control" parent="." unique_id=1129117765]
+layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -20,13 +20,13 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Guide_BattleBackground" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_BattleBackground" type="ColorRect" parent="BattleLayout" unique_id=558703488]
 layout_mode = 0
 offset_right = 640.0
 offset_bottom = 360.0
 color = Color(0.05, 0.15, 0.35, 0.12)
 
-[node name="Guide_LeftStatusPanel" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_LeftStatusPanel" type="ColorRect" parent="BattleLayout" unique_id=618162553]
 layout_mode = 0
 offset_left = 8.0
 offset_top = 12.0
@@ -34,7 +34,7 @@ offset_right = 128.0
 offset_bottom = 102.0
 color = Color(0.1, 0.8, 0.4, 0.18)
 
-[node name="Guide_PlayerWarlordRail" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_PlayerWarlordRail" type="ColorRect" parent="BattleLayout" unique_id=1442936383]
 layout_mode = 0
 offset_left = 8.0
 offset_top = 108.0
@@ -42,7 +42,7 @@ offset_right = 128.0
 offset_bottom = 288.0
 color = Color(0.1, 0.8, 0.4, 0.18)
 
-[node name="Guide_RevealAreaPanel" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_RevealAreaPanel" type="ColorRect" parent="BattleLayout" unique_id=596707663]
 layout_mode = 0
 offset_left = 136.0
 offset_top = 74.0
@@ -50,7 +50,7 @@ offset_right = 484.0
 offset_bottom = 224.0
 color = Color(0.2, 0.7, 1, 0.16)
 
-[node name="Guide_EnemyPanel" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_EnemyPanel" type="ColorRect" parent="BattleLayout" unique_id=293121244]
 layout_mode = 0
 offset_left = 492.0
 offset_top = 34.0
@@ -58,7 +58,7 @@ offset_right = 630.0
 offset_bottom = 120.0
 color = Color(1, 0.3, 0.2, 0.16)
 
-[node name="Guide_RightSupportPanel" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_RightSupportPanel" type="ColorRect" parent="BattleLayout" unique_id=1166189129]
 layout_mode = 0
 offset_left = 492.0
 offset_top = 126.0
@@ -66,7 +66,7 @@ offset_right = 630.0
 offset_bottom = 288.0
 color = Color(1, 0.8, 0.15, 0.14)
 
-[node name="Guide_BottomActionPanel" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_BottomActionPanel" type="ColorRect" parent="BattleLayout" unique_id=1455784401]
 layout_mode = 0
 offset_left = 136.0
 offset_top = 230.0
@@ -74,7 +74,7 @@ offset_right = 484.0
 offset_bottom = 288.0
 color = Color(0.9, 0.5, 1, 0.14)
 
-[node name="Guide_HandTrayPanel" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_HandTrayPanel" type="ColorRect" parent="BattleLayout" unique_id=881431345]
 layout_mode = 0
 offset_left = 8.0
 offset_top = 296.0
@@ -82,25 +82,25 @@ offset_right = 568.0
 offset_bottom = 352.0
 color = Color(0, 1, 1, 0.14)
 
-[node name="Guide_DrawTile3DShowcase" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_DrawTile3DShowcase" type="ColorRect" parent="BattleLayout" unique_id=826185230]
 layout_mode = 0
 offset_left = 438.0
 offset_top = 294.0
 offset_right = 1334.0
 offset_bottom = 742.0
 scale = Vector2(0.125, 0.125)
-color = Color(0.9, 0.9, 0.2, 0.20)
+color = Color(0.9, 0.9, 0.2, 0.2)
 
-[node name="Guide_HandTile3DShowcase" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_HandTile3DShowcase" type="ColorRect" parent="BattleLayout" unique_id=1352987060]
 layout_mode = 0
 offset_left = 10.0
 offset_top = 294.0
 offset_right = 1690.0
 offset_bottom = 542.0
 scale = Vector2(0.25, 0.25)
-color = Color(0, 1, 1, 0.20)
+color = Color(0, 1, 1, 0.2)
 
-[node name="Guide_TileWallPanel" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_TileWallPanel" type="ColorRect" parent="BattleLayout" unique_id=68885869]
 layout_mode = 0
 offset_left = 574.0
 offset_top = 296.0
@@ -108,7 +108,7 @@ offset_right = 632.0
 offset_bottom = 352.0
 color = Color(0.9, 0.7, 0.2, 0.18)
 
-[node name="Guide_PlayTilesButton" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_PlayTilesButton" type="ColorRect" parent="BattleLayout" unique_id=1851901696]
 layout_mode = 0
 offset_left = 146.0
 offset_top = 260.0
@@ -116,15 +116,15 @@ offset_right = 200.0
 offset_bottom = 280.0
 color = Color(1, 0.2, 0.1, 0.22)
 
-[node name="Guide_SortBySuitButton" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_SortBySuitButton" type="ColorRect" parent="BattleLayout" unique_id=1476231398]
 layout_mode = 0
-offset_left = 394.0
+offset_left = 373.0
 offset_top = 260.0
-offset_right = 458.0
+offset_right = 437.0
 offset_bottom = 280.0
 color = Color(1, 0.2, 0.1, 0.22)
 
-[node name="Guide_UltimateWinButton" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_UltimateWinButton" type="ColorRect" parent="BattleLayout" unique_id=248601205]
 layout_mode = 0
 offset_left = 462.0
 offset_top = 260.0
@@ -132,7 +132,7 @@ offset_right = 532.0
 offset_bottom = 280.0
 color = Color(1, 0.2, 0.1, 0.22)
 
-[node name="Guide_SortByRankButton" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_SortByRankButton" type="ColorRect" parent="BattleLayout" unique_id=282497193]
 layout_mode = 0
 offset_left = 394.0
 offset_top = 236.0
@@ -140,7 +140,7 @@ offset_right = 458.0
 offset_bottom = 254.0
 color = Color(1, 0.2, 0.1, 0.22)
 
-[node name="Guide_FinishBattleButton" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_FinishBattleButton" type="ColorRect" parent="BattleLayout" unique_id=659767686]
 layout_mode = 0
 offset_left = 536.0
 offset_top = 260.0
@@ -148,7 +148,7 @@ offset_right = 578.0
 offset_bottom = 280.0
 color = Color(1, 0.2, 0.1, 0.22)
 
-[node name="Guide_NewRunButton" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_NewRunButton" type="ColorRect" parent="BattleLayout" unique_id=892041627]
 layout_mode = 0
 offset_left = 536.0
 offset_top = 236.0
@@ -156,10 +156,1162 @@ offset_right = 578.0
 offset_bottom = 254.0
 color = Color(1, 0.2, 0.1, 0.22)
 
-[node name="Guide_MainMenuButton" type="ColorRect" parent="BattleLayout"]
+[node name="Guide_MainMenuButton" type="ColorRect" parent="BattleLayout" unique_id=1336901894]
 layout_mode = 0
 offset_left = 582.0
 offset_top = 8.0
 offset_right = 628.0
 offset_bottom = 28.0
 color = Color(1, 0.2, 0.1, 0.22)
+
+[node name="Guide_TurnBarPanel" type="ColorRect" parent="BattleLayout" unique_id=264277716]
+layout_mode = 0
+offset_left = 240.0
+offset_top = 38.0
+offset_right = 400.0
+offset_bottom = 60.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_RoundValue" type="ColorRect" parent="BattleLayout" unique_id=115638814]
+layout_mode = 0
+offset_left = 254.0
+offset_top = 40.0
+offset_right = 386.0
+offset_bottom = 58.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_PatternToggleButton" type="ColorRect" parent="BattleLayout" unique_id=1254168156]
+layout_mode = 0
+offset_left = 582.0
+offset_top = 264.0
+offset_right = 628.0
+offset_bottom = 284.0
+mouse_filter = 2
+color = Color(1, 0.2, 0.1, 0.22)
+
+[node name="Guide_MoneyPanelLabel" type="ColorRect" parent="BattleLayout" unique_id=113841702]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 18.0
+offset_right = 34.0
+offset_bottom = 36.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_MoneyValue" type="ColorRect" parent="BattleLayout" unique_id=926195375]
+layout_mode = 0
+offset_left = 34.0
+offset_top = 18.0
+offset_right = 116.0
+offset_bottom = 36.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_PlayerHpPanel" type="ColorRect" parent="BattleLayout" unique_id=2037870264]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 42.0
+offset_right = 114.0
+offset_bottom = 66.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_PlayerHpPanelLabel" type="ColorRect" parent="BattleLayout" unique_id=1562732197]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 45.0
+offset_right = 114.0
+offset_bottom = 55.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_PlayerHpValue" type="ColorRect" parent="BattleLayout" unique_id=848906462]
+layout_mode = 0
+offset_left = 72.0
+offset_top = 48.0
+offset_right = 110.0
+offset_bottom = 60.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_DefensePanel" type="ColorRect" parent="BattleLayout" unique_id=2081378832]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 70.0
+offset_right = 114.0
+offset_bottom = 94.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_DefensePanelLabel" type="ColorRect" parent="BattleLayout" unique_id=797220115]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 73.0
+offset_right = 114.0
+offset_bottom = 83.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_DefenseValue" type="ColorRect" parent="BattleLayout" unique_id=239497473]
+layout_mode = 0
+offset_left = 72.0
+offset_top = 76.0
+offset_right = 110.0
+offset_bottom = 88.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_WarlordBar" type="ColorRect" parent="BattleLayout" unique_id=2115745374]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 116.0
+offset_right = 120.0
+offset_bottom = 226.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_WarlordSlot_00" type="ColorRect" parent="BattleLayout" unique_id=1681523661]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 122.0
+offset_right = 84.0
+offset_bottom = 174.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_WarlordPortrait_00" type="ColorRect" parent="BattleLayout" unique_id=1892134316]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 122.0
+offset_right = 84.0
+offset_bottom = 160.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_WarlordNameLabel_00" type="ColorRect" parent="BattleLayout" unique_id=513422659]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 162.0
+offset_right = 100.0
+offset_bottom = 171.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_WarlordTriggerGlow_00" type="ColorRect" parent="BattleLayout" unique_id=1919071000]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 120.0
+offset_right = 86.0
+offset_bottom = 176.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_WeaponSlot_A" type="ColorRect" parent="BattleLayout" unique_id=2035085552]
+layout_mode = 0
+offset_left = 26.0
+offset_top = 177.0
+offset_right = 66.0
+offset_bottom = 205.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_WeaponSlot_B" type="ColorRect" parent="BattleLayout" unique_id=546973471]
+layout_mode = 0
+offset_left = 72.0
+offset_top = 177.0
+offset_right = 112.0
+offset_bottom = 205.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_WeaponIcon_A" type="ColorRect" parent="BattleLayout" unique_id=2049857338]
+layout_mode = 0
+offset_left = 26.0
+offset_top = 179.0
+offset_right = 66.0
+offset_bottom = 197.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_WeaponIcon_B" type="ColorRect" parent="BattleLayout" unique_id=677158953]
+layout_mode = 0
+offset_left = 72.0
+offset_top = 179.0
+offset_right = 112.0
+offset_bottom = 197.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_WeaponMarkOverlay_A" type="ColorRect" parent="BattleLayout" unique_id=1475517620]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 176.0
+offset_right = 67.0
+offset_bottom = 206.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_WeaponMarkOverlay_B" type="ColorRect" parent="BattleLayout" unique_id=269927671]
+layout_mode = 0
+offset_left = 71.0
+offset_top = 176.0
+offset_right = 113.0
+offset_bottom = 206.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_FlowerSeasonBuffBar" type="ColorRect" parent="BattleLayout" unique_id=103704325]
+layout_mode = 0
+offset_left = 500.0
+offset_top = 134.0
+offset_right = 622.0
+offset_bottom = 192.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_FlowerSeasonBuffTitle" type="ColorRect" parent="BattleLayout" unique_id=285883396]
+layout_mode = 0
+offset_left = 506.0
+offset_top = 138.0
+offset_right = 616.0
+offset_bottom = 150.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffSlot_00" type="ColorRect" parent="BattleLayout" unique_id=126608575]
+layout_mode = 0
+offset_left = 508.0
+offset_top = 154.0
+offset_right = 528.0
+offset_bottom = 168.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_BuffValueLabel_00" type="ColorRect" parent="BattleLayout" unique_id=1797872980]
+layout_mode = 0
+offset_left = 508.0
+offset_top = 154.0
+offset_right = 528.0
+offset_bottom = 168.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffIcon_Flower_Plum" type="ColorRect" parent="BattleLayout" unique_id=1429573004]
+layout_mode = 0
+offset_left = 508.0
+offset_top = 145.0
+offset_right = 528.0
+offset_bottom = 154.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffSlot_01" type="ColorRect" parent="BattleLayout" unique_id=436920118]
+layout_mode = 0
+offset_left = 535.0
+offset_top = 154.0
+offset_right = 555.0
+offset_bottom = 168.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_BuffValueLabel_01" type="ColorRect" parent="BattleLayout" unique_id=1005452087]
+layout_mode = 0
+offset_left = 535.0
+offset_top = 154.0
+offset_right = 555.0
+offset_bottom = 168.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffIcon_Flower_Orchid" type="ColorRect" parent="BattleLayout" unique_id=10736212]
+layout_mode = 0
+offset_left = 535.0
+offset_top = 145.0
+offset_right = 555.0
+offset_bottom = 154.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffSlot_02" type="ColorRect" parent="BattleLayout" unique_id=2087996626]
+layout_mode = 0
+offset_left = 562.0
+offset_top = 154.0
+offset_right = 582.0
+offset_bottom = 168.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_BuffValueLabel_02" type="ColorRect" parent="BattleLayout" unique_id=1228371443]
+layout_mode = 0
+offset_left = 562.0
+offset_top = 154.0
+offset_right = 582.0
+offset_bottom = 168.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffIcon_Flower_Bamboo" type="ColorRect" parent="BattleLayout" unique_id=1578546000]
+layout_mode = 0
+offset_left = 562.0
+offset_top = 145.0
+offset_right = 582.0
+offset_bottom = 154.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffSlot_03" type="ColorRect" parent="BattleLayout" unique_id=1013309184]
+layout_mode = 0
+offset_left = 589.0
+offset_top = 154.0
+offset_right = 609.0
+offset_bottom = 168.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_BuffValueLabel_03" type="ColorRect" parent="BattleLayout" unique_id=44250768]
+layout_mode = 0
+offset_left = 589.0
+offset_top = 154.0
+offset_right = 609.0
+offset_bottom = 168.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffIcon_Flower_Chrysanthemum" type="ColorRect" parent="BattleLayout" unique_id=877921658]
+layout_mode = 0
+offset_left = 589.0
+offset_top = 145.0
+offset_right = 609.0
+offset_bottom = 154.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffSlot_04" type="ColorRect" parent="BattleLayout" unique_id=72580684]
+layout_mode = 0
+offset_left = 508.0
+offset_top = 171.0
+offset_right = 528.0
+offset_bottom = 185.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_BuffValueLabel_04" type="ColorRect" parent="BattleLayout" unique_id=260895088]
+layout_mode = 0
+offset_left = 508.0
+offset_top = 171.0
+offset_right = 528.0
+offset_bottom = 185.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffIcon_Season_Spring" type="ColorRect" parent="BattleLayout" unique_id=236984177]
+layout_mode = 0
+offset_left = 508.0
+offset_top = 162.0
+offset_right = 528.0
+offset_bottom = 171.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffSlot_05" type="ColorRect" parent="BattleLayout" unique_id=896293398]
+layout_mode = 0
+offset_left = 535.0
+offset_top = 171.0
+offset_right = 555.0
+offset_bottom = 185.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_BuffValueLabel_05" type="ColorRect" parent="BattleLayout" unique_id=52719730]
+layout_mode = 0
+offset_left = 535.0
+offset_top = 171.0
+offset_right = 555.0
+offset_bottom = 185.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffIcon_Season_Summer" type="ColorRect" parent="BattleLayout" unique_id=999960508]
+layout_mode = 0
+offset_left = 535.0
+offset_top = 162.0
+offset_right = 555.0
+offset_bottom = 171.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffSlot_06" type="ColorRect" parent="BattleLayout" unique_id=2025279893]
+layout_mode = 0
+offset_left = 562.0
+offset_top = 171.0
+offset_right = 582.0
+offset_bottom = 185.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_BuffValueLabel_06" type="ColorRect" parent="BattleLayout" unique_id=643116600]
+layout_mode = 0
+offset_left = 562.0
+offset_top = 171.0
+offset_right = 582.0
+offset_bottom = 185.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffIcon_Season_Autumn" type="ColorRect" parent="BattleLayout" unique_id=454698652]
+layout_mode = 0
+offset_left = 562.0
+offset_top = 162.0
+offset_right = 582.0
+offset_bottom = 171.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffSlot_07" type="ColorRect" parent="BattleLayout" unique_id=2133027674]
+layout_mode = 0
+offset_left = 589.0
+offset_top = 171.0
+offset_right = 609.0
+offset_bottom = 185.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_BuffValueLabel_07" type="ColorRect" parent="BattleLayout" unique_id=1935946660]
+layout_mode = 0
+offset_left = 589.0
+offset_top = 171.0
+offset_right = 609.0
+offset_bottom = 185.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_BuffIcon_Season_Winter" type="ColorRect" parent="BattleLayout" unique_id=1587137696]
+layout_mode = 0
+offset_left = 589.0
+offset_top = 162.0
+offset_right = 609.0
+offset_bottom = 171.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_ConsumableBar" type="ColorRect" parent="BattleLayout" unique_id=692272326]
+layout_mode = 0
+offset_left = 500.0
+offset_top = 202.0
+offset_right = 622.0
+offset_bottom = 254.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_ConsumableBarTitle" type="ColorRect" parent="BattleLayout" unique_id=1108931560]
+layout_mode = 0
+offset_left = 506.0
+offset_top = 206.0
+offset_right = 616.0
+offset_bottom = 218.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_ConsumableSlot_00" type="ColorRect" parent="BattleLayout" unique_id=679175874]
+layout_mode = 0
+offset_left = 512.0
+offset_top = 222.0
+offset_right = 536.0
+offset_bottom = 244.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_ConsumableCountLabel_00" type="ColorRect" parent="BattleLayout" unique_id=720144730]
+layout_mode = 0
+offset_left = 524.0
+offset_top = 234.0
+offset_right = 536.0
+offset_bottom = 242.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_ConsumableSlot_01" type="ColorRect" parent="BattleLayout" unique_id=1350031459]
+layout_mode = 0
+offset_left = 546.0
+offset_top = 222.0
+offset_right = 570.0
+offset_bottom = 244.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_ConsumableCountLabel_01" type="ColorRect" parent="BattleLayout" unique_id=332743139]
+layout_mode = 0
+offset_left = 558.0
+offset_top = 234.0
+offset_right = 570.0
+offset_bottom = 242.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_ConsumableSlot_02" type="ColorRect" parent="BattleLayout" unique_id=997018419]
+layout_mode = 0
+offset_left = 580.0
+offset_top = 222.0
+offset_right = 604.0
+offset_bottom = 244.0
+mouse_filter = 2
+color = Color(0.8, 0.8, 0.8, 0.16)
+
+[node name="Guide_ConsumableCountLabel_02" type="ColorRect" parent="BattleLayout" unique_id=273677214]
+layout_mode = 0
+offset_left = 592.0
+offset_top = 234.0
+offset_right = 604.0
+offset_bottom = 242.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_RevealAreaTitle" type="ColorRect" parent="BattleLayout" unique_id=1290596577]
+layout_mode = 0
+offset_left = 146.0
+offset_top = 82.0
+offset_right = 474.0
+offset_bottom = 98.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_PlayerConditionPanel" type="ColorRect" parent="BattleLayout" unique_id=803028092]
+layout_mode = 0
+offset_left = 146.0
+offset_top = 100.0
+offset_right = 238.0
+offset_bottom = 116.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_PlayerConditionValue" type="ColorRect" parent="BattleLayout" unique_id=154303338]
+layout_mode = 0
+offset_left = 150.0
+offset_top = 101.0
+offset_right = 234.0
+offset_bottom = 115.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_EnemyConditionPanel" type="ColorRect" parent="BattleLayout" unique_id=1342760385]
+layout_mode = 0
+offset_left = 382.0
+offset_top = 100.0
+offset_right = 474.0
+offset_bottom = 116.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_EnemyConditionValue" type="ColorRect" parent="BattleLayout" unique_id=1413874558]
+layout_mode = 0
+offset_left = 386.0
+offset_top = 101.0
+offset_right = 470.0
+offset_bottom = 115.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_AllyUnit_00" type="ColorRect" parent="BattleLayout" unique_id=670081771]
+layout_mode = 0
+offset_left = 164.0
+offset_top = 146.0
+offset_right = 196.0
+offset_bottom = 174.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_AllyUnitLabel_00" type="ColorRect" parent="BattleLayout" unique_id=259400611]
+layout_mode = 0
+offset_left = 164.0
+offset_top = 147.0
+offset_right = 196.0
+offset_bottom = 165.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_AllyUnit_01" type="ColorRect" parent="BattleLayout" unique_id=457221059]
+layout_mode = 0
+offset_left = 218.0
+offset_top = 126.0
+offset_right = 250.0
+offset_bottom = 154.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_AllyUnitLabel_01" type="ColorRect" parent="BattleLayout" unique_id=561917284]
+layout_mode = 0
+offset_left = 218.0
+offset_top = 127.0
+offset_right = 250.0
+offset_bottom = 145.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_AllyUnit_02" type="ColorRect" parent="BattleLayout" unique_id=1474385776]
+layout_mode = 0
+offset_left = 272.0
+offset_top = 146.0
+offset_right = 304.0
+offset_bottom = 174.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_AllyUnitLabel_02" type="ColorRect" parent="BattleLayout" unique_id=1592695726]
+layout_mode = 0
+offset_left = 272.0
+offset_top = 147.0
+offset_right = 304.0
+offset_bottom = 165.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_EnemyWarlordUnit" type="ColorRect" parent="BattleLayout" unique_id=1102513326]
+layout_mode = 0
+offset_left = 404.0
+offset_top = 134.0
+offset_right = 446.0
+offset_bottom = 168.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_EnemyUnitSprite" type="ColorRect" parent="BattleLayout" unique_id=1446347972]
+layout_mode = 0
+offset_left = 404.0
+offset_top = 136.0
+offset_right = 446.0
+offset_bottom = 158.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_EnemyIntentBox" type="ColorRect" parent="BattleLayout" unique_id=1415857119]
+layout_mode = 0
+offset_left = 370.0
+offset_top = 174.0
+offset_right = 474.0
+offset_bottom = 208.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_EnemyIntentBoxValue" type="ColorRect" parent="BattleLayout" unique_id=1412614544]
+layout_mode = 0
+offset_left = 376.0
+offset_top = 176.0
+offset_right = 468.0
+offset_bottom = 204.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_PatternBurstLabel" type="ColorRect" parent="BattleLayout" unique_id=590291586]
+layout_mode = 0
+offset_left = 166.0
+offset_top = 114.0
+offset_right = 454.0
+offset_bottom = 142.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_ConcealedMeldHintPanel" type="ColorRect" parent="BattleLayout" unique_id=1275398326]
+layout_mode = 0
+offset_left = 146.0
+offset_top = 208.0
+offset_right = 224.0
+offset_bottom = 222.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_ConcealedMeldHintValue" type="ColorRect" parent="BattleLayout" unique_id=1580823391]
+layout_mode = 0
+offset_left = 150.0
+offset_top = 208.0
+offset_right = 220.0
+offset_bottom = 220.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_PairCandidateHintPanel" type="ColorRect" parent="BattleLayout" unique_id=1404687119]
+layout_mode = 0
+offset_left = 230.0
+offset_top = 208.0
+offset_right = 296.0
+offset_bottom = 222.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_PairCandidateHintValue" type="ColorRect" parent="BattleLayout" unique_id=35806820]
+layout_mode = 0
+offset_left = 234.0
+offset_top = 208.0
+offset_right = 292.0
+offset_bottom = 220.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_ShantenBadge" type="ColorRect" parent="BattleLayout" unique_id=422422482]
+layout_mode = 0
+offset_left = 302.0
+offset_top = 208.0
+offset_right = 358.0
+offset_bottom = 222.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_ShantenValue" type="ColorRect" parent="BattleLayout" unique_id=120180021]
+layout_mode = 0
+offset_left = 306.0
+offset_top = 208.0
+offset_right = 354.0
+offset_bottom = 220.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_WinMultiplierBadge" type="ColorRect" parent="BattleLayout" unique_id=496369081]
+layout_mode = 0
+offset_left = 364.0
+offset_top = 208.0
+offset_right = 426.0
+offset_bottom = 222.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_WinMultiplierValue" type="ColorRect" parent="BattleLayout" unique_id=1180157177]
+layout_mode = 0
+offset_left = 368.0
+offset_top = 208.0
+offset_right = 422.0
+offset_bottom = 220.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_ModeValue" type="ColorRect" parent="BattleLayout" unique_id=756449484]
+layout_mode = 0
+offset_left = 146.0
+offset_top = 232.0
+offset_right = 474.0
+offset_bottom = 244.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_StatusValue" type="ColorRect" parent="BattleLayout" unique_id=49607997]
+layout_mode = 0
+offset_left = 146.0
+offset_top = 244.0
+offset_right = 474.0
+offset_bottom = 254.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_DrawLabel" type="ColorRect" parent="BattleLayout" unique_id=1722290198]
+layout_mode = 0
+offset_left = 146.0
+offset_top = 254.0
+offset_right = 246.0
+offset_bottom = 266.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_HandLabel" type="ColorRect" parent="BattleLayout" unique_id=1086377125]
+layout_mode = 0
+offset_left = 16.0
+offset_top = 286.0
+offset_right = 96.0
+offset_bottom = 296.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_EnemyNameLabel" type="ColorRect" parent="BattleLayout" unique_id=1015113942]
+layout_mode = 0
+offset_left = 500.0
+offset_top = 42.0
+offset_right = 622.0
+offset_bottom = 58.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_EnemyHpPanel" type="ColorRect" parent="BattleLayout" unique_id=2035206865]
+layout_mode = 0
+offset_left = 502.0
+offset_top = 62.0
+offset_right = 620.0
+offset_bottom = 86.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_EnemyHpPanelLabel" type="ColorRect" parent="BattleLayout" unique_id=990695358]
+layout_mode = 0
+offset_left = 502.0
+offset_top = 65.0
+offset_right = 620.0
+offset_bottom = 75.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_EnemyHpValue" type="ColorRect" parent="BattleLayout" unique_id=1740427587]
+layout_mode = 0
+offset_left = 574.0
+offset_top = 68.0
+offset_right = 616.0
+offset_bottom = 80.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_EnemyAttackCountdownPanel" type="ColorRect" parent="BattleLayout" unique_id=584940927]
+layout_mode = 0
+offset_left = 502.0
+offset_top = 88.0
+offset_right = 620.0
+offset_bottom = 112.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_EnemyAttackCountdownPanelLabel" type="ColorRect" parent="BattleLayout" unique_id=1468586557]
+layout_mode = 0
+offset_left = 502.0
+offset_top = 91.0
+offset_right = 620.0
+offset_bottom = 101.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_EnemyAttackCountdownValue" type="ColorRect" parent="BattleLayout" unique_id=1803512115]
+layout_mode = 0
+offset_left = 574.0
+offset_top = 94.0
+offset_right = 616.0
+offset_bottom = 106.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_EnemyIntentLabel" type="ColorRect" parent="BattleLayout" unique_id=781084570]
+layout_mode = 0
+offset_left = 500.0
+offset_top = 116.0
+offset_right = 622.0
+offset_bottom = 126.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_EnemyAttackValue" type="ColorRect" parent="BattleLayout" unique_id=1683089767]
+layout_mode = 0
+offset_left = 500.0
+offset_top = 126.0
+offset_right = 622.0
+offset_bottom = 138.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_EnemyHpMirrorValue" type="ColorRect" parent="BattleLayout" unique_id=2030684345]
+layout_mode = 0
+offset_left = 500.0
+offset_top = 138.0
+offset_right = 622.0
+offset_bottom = 148.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_OpenMeldLedgerPanel" type="ColorRect" parent="BattleLayout" unique_id=691395354]
+layout_mode = 0
+offset_left = 210.0
+offset_top = 252.0
+offset_right = 326.0
+offset_bottom = 284.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_OpenMeldLedgerTitle" type="ColorRect" parent="BattleLayout" unique_id=1215497565]
+layout_mode = 0
+offset_left = 216.0
+offset_top = 254.0
+offset_right = 320.0
+offset_bottom = 264.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_DrawTile_00" type="ColorRect" parent="BattleLayout" unique_id=348783622]
+layout_mode = 0
+offset_left = 444.0
+offset_top = 304.0
+offset_right = 472.0
+offset_bottom = 344.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_DrawTile_01" type="ColorRect" parent="BattleLayout" unique_id=1640445182]
+layout_mode = 0
+offset_left = 478.0
+offset_top = 304.0
+offset_right = 506.0
+offset_bottom = 344.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_DrawTile_02" type="ColorRect" parent="BattleLayout" unique_id=1422981032]
+layout_mode = 0
+offset_left = 512.0
+offset_top = 304.0
+offset_right = 540.0
+offset_bottom = 344.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_00" type="ColorRect" parent="BattleLayout" unique_id=334151913]
+layout_mode = 0
+offset_left = 86.0
+offset_top = 304.0
+offset_right = 116.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_01" type="ColorRect" parent="BattleLayout" unique_id=761363339]
+layout_mode = 0
+offset_left = 117.0
+offset_top = 304.0
+offset_right = 147.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_02" type="ColorRect" parent="BattleLayout" unique_id=246071516]
+layout_mode = 0
+offset_left = 148.0
+offset_top = 304.0
+offset_right = 178.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_03" type="ColorRect" parent="BattleLayout" unique_id=65557799]
+layout_mode = 0
+offset_left = 179.0
+offset_top = 304.0
+offset_right = 209.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_04" type="ColorRect" parent="BattleLayout" unique_id=1182832425]
+layout_mode = 0
+offset_left = 210.0
+offset_top = 304.0
+offset_right = 240.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_05" type="ColorRect" parent="BattleLayout" unique_id=1658743877]
+layout_mode = 0
+offset_left = 241.0
+offset_top = 304.0
+offset_right = 271.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_06" type="ColorRect" parent="BattleLayout" unique_id=989808922]
+layout_mode = 0
+offset_left = 272.0
+offset_top = 304.0
+offset_right = 302.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_07" type="ColorRect" parent="BattleLayout" unique_id=399090273]
+layout_mode = 0
+offset_left = 303.0
+offset_top = 304.0
+offset_right = 333.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_08" type="ColorRect" parent="BattleLayout" unique_id=759096876]
+layout_mode = 0
+offset_left = 334.0
+offset_top = 304.0
+offset_right = 364.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_09" type="ColorRect" parent="BattleLayout" unique_id=2034321110]
+layout_mode = 0
+offset_left = 365.0
+offset_top = 304.0
+offset_right = 395.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_10" type="ColorRect" parent="BattleLayout" unique_id=1511067258]
+layout_mode = 0
+offset_left = 396.0
+offset_top = 304.0
+offset_right = 426.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_11" type="ColorRect" parent="BattleLayout" unique_id=1168108674]
+layout_mode = 0
+offset_left = 427.0
+offset_top = 304.0
+offset_right = 457.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_12" type="ColorRect" parent="BattleLayout" unique_id=848890964]
+layout_mode = 0
+offset_left = 458.0
+offset_top = 304.0
+offset_right = 488.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_TileWallLabel" type="ColorRect" parent="BattleLayout" unique_id=950254922]
+layout_mode = 0
+offset_left = 578.0
+offset_top = 299.0
+offset_right = 628.0
+offset_bottom = 309.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_TileWallTile_00" type="ColorRect" parent="BattleLayout" unique_id=749431906]
+layout_mode = 0
+offset_left = 580.0
+offset_top = 314.0
+offset_right = 588.0
+offset_bottom = 326.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_TileWallTile_01" type="ColorRect" parent="BattleLayout" unique_id=336876560]
+layout_mode = 0
+offset_left = 589.0
+offset_top = 314.0
+offset_right = 597.0
+offset_bottom = 326.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_TileWallTile_02" type="ColorRect" parent="BattleLayout" unique_id=788210772]
+layout_mode = 0
+offset_left = 598.0
+offset_top = 314.0
+offset_right = 606.0
+offset_bottom = 326.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_TileWallTile_03" type="ColorRect" parent="BattleLayout" unique_id=516566828]
+layout_mode = 0
+offset_left = 607.0
+offset_top = 314.0
+offset_right = 615.0
+offset_bottom = 326.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_TileWallTile_04" type="ColorRect" parent="BattleLayout" unique_id=1531519931]
+layout_mode = 0
+offset_left = 616.0
+offset_top = 314.0
+offset_right = 624.0
+offset_bottom = 326.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_TileWallTile_05" type="ColorRect" parent="BattleLayout" unique_id=1234890789]
+layout_mode = 0
+offset_left = 580.0
+offset_top = 327.0
+offset_right = 588.0
+offset_bottom = 339.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_TileWallTile_06" type="ColorRect" parent="BattleLayout" unique_id=1551328817]
+layout_mode = 0
+offset_left = 589.0
+offset_top = 327.0
+offset_right = 597.0
+offset_bottom = 339.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_TileWallTile_07" type="ColorRect" parent="BattleLayout" unique_id=1175008546]
+layout_mode = 0
+offset_left = 598.0
+offset_top = 327.0
+offset_right = 606.0
+offset_bottom = 339.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_TileWallTile_08" type="ColorRect" parent="BattleLayout" unique_id=1171134501]
+layout_mode = 0
+offset_left = 607.0
+offset_top = 327.0
+offset_right = 615.0
+offset_bottom = 339.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_TileWallTile_09" type="ColorRect" parent="BattleLayout" unique_id=592893659]
+layout_mode = 0
+offset_left = 616.0
+offset_top = 327.0
+offset_right = 624.0
+offset_bottom = 339.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_TileWallCount" type="ColorRect" parent="BattleLayout" unique_id=861980361]
+layout_mode = 0
+offset_left = 578.0
+offset_top = 338.0
+offset_right = 628.0
+offset_bottom = 348.0
+mouse_filter = 2
+color = Color(1, 1, 1, 0.1)
+
+[node name="Guide_HitsButton" type="ColorRect" parent="BattleLayout" unique_id=1715596763]
+layout_mode = 0
+offset_left = 536.0
+offset_top = 260.0
+offset_right = 578.0
+offset_bottom = 280.0
+mouse_filter = 2
+color = Color(0.2, 0.7, 1, 0.14)
+
+[node name="Guide_HandTile_13" type="ColorRect" parent="BattleLayout" unique_id=209165577]
+layout_mode = 0
+offset_left = 489.0
+offset_top = 304.0
+offset_right = 519.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_14" type="ColorRect" parent="BattleLayout" unique_id=1433294111]
+layout_mode = 0
+offset_left = 520.0
+offset_top = 304.0
+offset_right = 550.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)
+
+[node name="Guide_HandTile_15" type="ColorRect" parent="BattleLayout" unique_id=1592453444]
+layout_mode = 0
+offset_left = 551.0
+offset_top = 304.0
+offset_right = 581.0
+offset_bottom = 346.0
+mouse_filter = 2
+color = Color(0, 1, 1, 0.2)

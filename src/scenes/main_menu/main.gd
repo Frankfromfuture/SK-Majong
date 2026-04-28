@@ -26,7 +26,7 @@ var _animated_nodes: Array[Dictionary] = []
 
 func _ready() -> void:
 	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
-	_build_menu()
+	_wire_existing_menu()
 
 
 func _process(delta: float) -> void:
@@ -44,6 +44,68 @@ func _process(delta: float) -> void:
 		var speed: float = data["speed"]
 		node.position = base_position + Vector2(0.0, sin(_time * speed + i * 0.8) * float_amount)
 		node.rotation_degrees = data["rotation"] + sin(_time * (speed * 0.7) + i) * data["wobble"]
+
+
+func _wire_existing_menu() -> void:
+	main_title = find_child("MainTitle", true, false) as Label
+	subtitle_label = find_child("MainSubtitle", true, false) as Label
+	_animated_nodes.clear()
+	_track_animation("LeftBannerSprite", 1.5, 0.8, 1.4)
+	_track_animation("RightBannerSprite", 1.5, 0.85, 1.4)
+	_track_animation("JadeStatueLeftSprite", 2.2, 0.9, 1.2)
+	_track_animation("LanternRightSprite", 3.0, 1.1, 1.8)
+	_track_animation("CoinStacksLeftSprite", 2.0, 1.0, 1.2)
+	_track_animation("CoinStacksRightSprite", 2.0, 1.05, 1.2)
+	_track_animation("MenuTileClusterSprite", 2.4, 0.95, 1.3)
+	_track_animation("LogoSprite", 1.8, 0.75, 0.6)
+	_track_animation("MenuTile_Wan_01", 2.2, 1.0, 1.4)
+	_track_animation("MenuTile_Fa_01", 2.2, 1.0, 1.4)
+	_track_animation("MenuTile_Dong_01", 2.2, 1.0, 1.4)
+
+	var start_button := find_child("StartRunButton", true, false) as Button
+	if start_button != null:
+		start_button.pressed.connect(func() -> void:
+			get_tree().change_scene_to_file("res://src/scenes/battle/battle.tscn")
+		)
+	var quit_button := find_child("QuitButton", true, false) as Button
+	if quit_button != null:
+		quit_button.pressed.connect(func() -> void: get_tree().quit())
+	_wire_button_fx("StartRunButton")
+	_wire_button_fx("QuitButton")
+
+
+func _track_animation(node_name: String, float_amount: float, speed: float, wobble: float) -> void:
+	var node := find_child(node_name, true, false) as Control
+	if node == null:
+		return
+	_animated_nodes.append({
+		"node": node,
+		"base": node.position,
+		"float": float_amount,
+		"speed": speed,
+		"rotation": node.rotation_degrees,
+		"wobble": wobble,
+	})
+
+
+func _wire_button_fx(button_name: String) -> void:
+	var button := find_child(button_name, true, false) as Button
+	var holder := find_child("%sGroup" % button_name, true, false) as Control
+	var frame := find_child("%sFrame" % button_name, true, false) as TextureRect
+	if button == null or holder == null or frame == null or button.disabled:
+		return
+	button.mouse_entered.connect(func() -> void:
+		_tween_button_holder(holder, frame, Vector2(1.045, 1.045), Color(1.18, 1.08, 0.86, 1.0), 0.10)
+	)
+	button.mouse_exited.connect(func() -> void:
+		_tween_button_holder(holder, frame, Vector2.ONE, Color.WHITE, 0.13)
+	)
+	button.button_down.connect(func() -> void:
+		_tween_button_holder(holder, frame, Vector2(0.97, 0.97), Color(1.35, 0.92, 0.70, 1.0), 0.06)
+	)
+	button.button_up.connect(func() -> void:
+		_tween_button_holder(holder, frame, Vector2(1.045, 1.045), Color(1.18, 1.08, 0.86, 1.0), 0.08)
+	)
 
 
 func _build_menu() -> void:
