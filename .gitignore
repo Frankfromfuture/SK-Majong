@@ -2,7 +2,7 @@
 .godot/
 *.translation
 
-# Godot mono / C#
+# Godot mono
 .mono/
 /data_*/
 
@@ -27,23 +27,3 @@ Balatro_reference/
 
 # Logs
 *.log
-
-# Unity
-unity_proto/[Ll]ibrary/
-unity_proto/[Tt]emp/
-unity_proto/[Oo]bj/
-unity_proto/[Bb]uild/
-unity_proto/[Bb]uilds/
-unity_proto/[Ll]ogs/
-unity_proto/[Uu]ser[Ss]ettings/
-unity_proto/MemoryCaptures/
-unity_proto/*.csproj
-unity_proto/*.sln
-unity_proto/*.user
-unity_proto/*.pidb
-unity_proto/*.booproj
-unity_proto/*.svd
-unity_proto/*.pdb
-unity_proto/*.mdb
-unity_proto/*.opendb
-unity_proto/*.VC.db

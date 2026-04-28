@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://416ff6f974df415f86c2"]
+
+[ext_resource type="ArrayMesh" uid="uid://3c5a9e48be664e9c80b3" path="res://assets/models/mj/tiles/TileFace_Wind_West.obj" id="1_mesh"]
+[ext_resource type="Material" uid="uid://390f530fa5964fcdba0c" path="res://assets/models/mj/tiles/TileFace_Wind_West.tres" id="2_mat"]
+
+[node name="TileFace_Wind_West" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = ExtResource("1_mesh")
+surface_material_override/0 = ExtResource("2_mat")

@@ -1,0 +1,16 @@
+{
+  "screen": "Reward",
+  "version": "v001",
+  "stage": "2.0",
+  "status": "reserved",
+  "prototypeResolution": { "width": 1920, "height": 1080 },
+  "assets": [
+    { "name": "UI_Reward_Background_v001.png", "status": "pending", "node": "RewardBackground" },
+    { "name": "UI_Reward_TitleFrame_v001.png", "status": "pending", "node": "RewardTitleFrame" },
+    { "name": "UI_Reward_ChoiceCardBase_v001.png", "status": "pending", "node": "ChoiceCardBase" },
+    { "name": "UI_Reward_ButtonConfirm_v001.png", "status": "pending", "node": "ConfirmButton" },
+    { "name": "UI_Reward_RarityGlowCommon_v001.png", "status": "pending", "node": "RarityGlowCommon" },
+    { "name": "UI_Reward_RarityGlowRare_v001.png", "status": "pending", "node": "RarityGlowRare" },
+    { "name": "UI_Reward_RarityGlowLegendary_v001.png", "status": "pending", "node": "RarityGlowLegendary" }
+  ]
+}

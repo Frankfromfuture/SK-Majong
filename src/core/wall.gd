@@ -9,12 +9,19 @@ func _init(build_now: bool = true) -> void:
 		reset(false)
 
 
-func reset(should_shuffle: bool = true, seed: int = 0) -> void:
+func reset(should_shuffle: bool = true, seed: int = 0, include_honors: bool = true) -> void:
 	tiles.clear()
 	for suit in [Tile.Suit.MAN, Tile.Suit.PIN, Tile.Suit.SOU]:
 		for rank in range(1, 10):
 			for _copy_index in range(4):
 				tiles.append(Tile.new(suit, rank))
+	if include_honors:
+		for rank in range(1, 5):
+			for _copy_index in range(4):
+				tiles.append(Tile.wind(rank))
+		for rank in range(1, 4):
+			for _copy_index in range(4):
+				tiles.append(Tile.dragon(rank))
 	if should_shuffle:
 		shuffle(seed)
 

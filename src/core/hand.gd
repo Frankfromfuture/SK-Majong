@@ -4,6 +4,11 @@ extends RefCounted
 const MAX_SIZE := 13
 
 var tiles: Array[Tile] = []
+var max_size := MAX_SIZE
+
+
+func _init(p_max_size: int = MAX_SIZE) -> void:
+	max_size = p_max_size
 
 
 func size() -> int:
@@ -11,7 +16,7 @@ func size() -> int:
 
 
 func is_full() -> bool:
-	return tiles.size() >= MAX_SIZE
+	return tiles.size() >= max_size
 
 
 func add_tile(tile: Tile) -> bool:

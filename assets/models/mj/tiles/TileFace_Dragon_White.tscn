@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://72ffd4e1ea6143ad9f8c"]
+
+[ext_resource type="ArrayMesh" uid="uid://ee8b8522fe7f4d359384" path="res://assets/models/mj/tiles/TileFace_Dragon_White.obj" id="1_mesh"]
+[ext_resource type="Material" uid="uid://b7a7c6f2cad54a6aab08" path="res://assets/models/mj/tiles/TileFace_Dragon_White.tres" id="2_mat"]
+
+[node name="TileFace_Dragon_White" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = ExtResource("1_mesh")
+surface_material_override/0 = ExtResource("2_mat")

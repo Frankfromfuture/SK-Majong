@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://c7yydyn1w8e5o"]
+[gd_scene format=3 uid="uid://c7yydyn1w8e5o"]
 
-[ext_resource type="Script" path="res://src/scenes/main_menu/main.gd" id="1_main"]
+[ext_resource type="Script" uid="uid://cxpv5eigg4fc6" path="res://src/scenes/main_menu/main.gd" id="1_main"]
 
-[node name="Main" type="Control"]
+[node name="Main" type="Control" unique_id=2093778011]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_main")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=2079946086]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,7 +20,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.075, 0.086, 0.071, 1)
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=34313808]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -28,17 +28,19 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=479868953]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+[node name="TitleLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=745235973]
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "Sangoku Mahjong"
 horizontal_alignment = 1
 
-[node name="StatusLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+[node name="StatusLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=507813863]
 layout_mode = 2
 text = "Phase 0 scaffold ready"
 horizontal_alignment = 1
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=619716075]

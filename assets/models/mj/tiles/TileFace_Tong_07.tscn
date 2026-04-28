@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://b77d601bc019425b9be6"]
+
+[ext_resource type="ArrayMesh" uid="uid://2f3d4ae3e26040d6a911" path="res://assets/models/mj/tiles/TileFace_Tong_07.obj" id="1_mesh"]
+[ext_resource type="Material" uid="uid://cd2dbf37a3e747c2b11a" path="res://assets/models/mj/tiles/TileFace_Tong_07.tres" id="2_mat"]
+
+[node name="TileFace_Tong_07" type="Node3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = ExtResource("1_mesh")
+surface_material_override/0 = ExtResource("2_mat")

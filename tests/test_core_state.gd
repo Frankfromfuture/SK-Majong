@@ -4,17 +4,24 @@ const TileScript = preload("res://src/core/tile.gd")
 const HandScript = preload("res://src/core/hand.gd")
 const WallScript = preload("res://src/core/wall.gd")
 const BattleStateScript = preload("res://src/core/battle_state.gd")
+const PatternMatcherScript = preload("res://src/core/pattern_matcher.gd")
 
 
-func test_wall_builds_standard_108_tile_set() -> void:
+func test_wall_builds_suited_108_tile_set() -> void:
 	var wall := WallScript.new(false)
-	wall.reset(false)
+	wall.reset(false, 0, false)
 	assert_eq(wall.remaining_count(), 108)
+
+
+func test_wall_builds_full_136_tile_set() -> void:
+	var wall := WallScript.new(false)
+	wall.reset(false, 0, true)
+	assert_eq(wall.remaining_count(), 136)
 
 
 func test_wall_draw_reduces_remaining_count() -> void:
 	var wall := WallScript.new(false)
-	wall.reset(false)
+	wall.reset(false, 0, false)
 	var drawn := wall.draw(13)
 	assert_eq(drawn.size(), 13)
 	assert_eq(wall.remaining_count(), 95)
@@ -22,12 +29,22 @@ func test_wall_draw_reduces_remaining_count() -> void:
 
 func test_hand_draw_to_full_caps_at_thirteen() -> void:
 	var wall := WallScript.new(false)
-	wall.reset(false)
+	wall.reset(false, 0, false)
 	var hand := HandScript.new()
 	var drawn := hand.draw_to_full(wall)
 	assert_eq(drawn, 13)
 	assert_eq(hand.size(), 13)
 	assert_eq(wall.remaining_count(), 95)
+
+
+func test_hand_draw_to_full_caps_at_fourteen() -> void:
+	var wall := WallScript.new(false)
+	wall.reset(false, 0, true)
+	var hand := HandScript.new(14)
+	var drawn := hand.draw_to_full(wall)
+	assert_eq(drawn, 14)
+	assert_eq(hand.size(), 14)
+	assert_eq(wall.remaining_count(), 122)
 
 
 func test_hand_remove_tiles_uses_tile_identity_by_value() -> void:

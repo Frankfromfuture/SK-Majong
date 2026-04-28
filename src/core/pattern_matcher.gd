@@ -28,6 +28,20 @@ static func match_pattern(selected_tiles: Array) -> Dictionary:
 	return {}
 
 
+static func is_standard_win(tiles: Array) -> bool:
+	if tiles.size() != 14:
+		return false
+
+	var counts := _counts_by_tile(tiles)
+	for pair_key in counts.keys():
+		if counts[pair_key] < 2:
+			continue
+		var remaining := _remove_tile_key_count(tiles, pair_key, 2)
+		if _can_split_all_melds(remaining):
+			return true
+	return false
+
+
 static func _matches(pattern_id: String, tiles: Array) -> bool:
 	match pattern_id:
 		"yakuman":
@@ -62,7 +76,7 @@ static func is_pair(tiles: Array) -> bool:
 
 
 static func is_taatsu(tiles: Array) -> bool:
-	return tiles.size() == 2 and _all_same_suit(tiles) and abs(tiles[0].rank - tiles[1].rank) == 1
+	return tiles.size() == 2 and _all_same_suited_suit(tiles) and abs(tiles[0].rank - tiles[1].rank) == 1
 
 
 static func is_triplet(tiles: Array) -> bool:
@@ -70,7 +84,7 @@ static func is_triplet(tiles: Array) -> bool:
 
 
 static func is_sequence(tiles: Array) -> bool:
-	if tiles.size() != 3 or not _all_same_suit(tiles):
+	if tiles.size() != 3 or not _all_same_suited_suit(tiles):
 		return false
 	var ranks := _ranks(tiles)
 	ranks.sort()
@@ -95,6 +109,8 @@ static func is_sanshoku_set(tiles: Array) -> bool:
 	var rank: int = tiles[0].rank
 	var suits := {}
 	for tile in tiles:
+		if not tile.is_suited():
+			return false
 		if tile.rank != rank:
 			return false
 		suits[tile.suit] = true
@@ -102,7 +118,7 @@ static func is_sanshoku_set(tiles: Array) -> bool:
 
 
 static func is_iipeikou(tiles: Array) -> bool:
-	if tiles.size() != 6 or not _all_same_suit(tiles):
+	if tiles.size() != 6 or not _all_same_suited_suit(tiles):
 		return false
 	var counts_by_rank := _counts_by_rank(tiles)
 	if counts_by_rank.size() != 3:
@@ -122,7 +138,7 @@ static func is_kan(tiles: Array) -> bool:
 
 
 static func is_iitsu(tiles: Array) -> bool:
-	if tiles.size() != 9 or not _all_same_suit(tiles):
+	if tiles.size() != 9 or not _all_same_suited_suit(tiles):
 		return false
 	var ranks := _ranks(tiles)
 	ranks.sort()
@@ -130,7 +146,7 @@ static func is_iitsu(tiles: Array) -> bool:
 
 
 static func is_chinitsu_group(tiles: Array) -> bool:
-	return tiles.size() == 5 and _all_same_suit(tiles)
+	return tiles.size() == 5 and _all_same_suited_suit(tiles)
 
 
 static func is_yakuman(tiles: Array) -> bool:
@@ -207,6 +223,44 @@ static func _all_same_suit(tiles: Array) -> bool:
 	for tile in tiles:
 		if tile.suit != suit:
 			return false
+	return true
+
+
+static func _all_same_suited_suit(tiles: Array) -> bool:
+	return _all_same_suit(tiles) and tiles[0].is_suited()
+
+
+static func _can_split_all_melds(tiles: Array) -> bool:
+	if tiles.is_empty():
+		return true
+	var sorted_tiles := _sorted_copy(tiles)
+	var first: Tile = sorted_tiles[0]
+
+	var triplet := [first, first, first]
+	if _contains_tiles(sorted_tiles, triplet):
+		if _can_split_all_melds(_subtract_subset(sorted_tiles, triplet)):
+			return true
+
+	if first.is_suited() and first.rank <= 7:
+		var sequence := [first, Tile.new(first.suit, first.rank + 1), Tile.new(first.suit, first.rank + 2)]
+		if _contains_tiles(sorted_tiles, sequence):
+			if _can_split_all_melds(_subtract_subset(sorted_tiles, sequence)):
+				return true
+
+	return false
+
+
+static func _contains_tiles(tiles: Array, selected_tiles: Array) -> bool:
+	var remaining := tiles.duplicate()
+	for selected in selected_tiles:
+		var found_index := -1
+		for i in range(remaining.size()):
+			if remaining[i].equals_tile(selected):
+				found_index = i
+				break
+		if found_index == -1:
+			return false
+		remaining.remove_at(found_index)
 	return true
 
 

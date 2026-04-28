@@ -1,0 +1,37 @@
+{
+  "version": "1.0",
+  "description": "Immediate combat effects for played 3-tile sets",
+  "base_effect_value": 10,
+  "weak_effect_value": 20,
+  "strong_effect_value": 30,
+  "resource_mapping": [
+    { "tile": "SOU", "displaySuit": "Suo / Tiao", "resource": "damage", "stage": "1.0" },
+    { "tile": "PIN", "displaySuit": "Tong / Bing", "resource": "defense", "stage": "1.0" },
+    { "tile": "MAN", "displaySuit": "Wan", "resource": "money", "stage": "1.0" },
+    { "tile": "DRAGON_RED", "displayName": "中", "resource": "damage", "stage": "1.0" },
+    { "tile": "DRAGON_GREEN", "displayName": "发", "resource": "money", "stage": "1.0" },
+    { "tile": "DRAGON_WHITE", "displayName": "白", "resource": "defense", "stage": "1.0" },
+    { "tile": "WIND", "displayName": "东南西北", "resource": "tempo", "stage": "1.0" }
+  ],
+  "play_effects": [
+    { "play_type": "sequence", "strength": "strong", "effect_value": 30, "enters_open_meld": true },
+    { "play_type": "triplet", "strength": "strong", "effect_value": 30, "enters_open_meld": true },
+    { "play_type": "pair_single", "pair_strength": "weak", "pair_value": 20, "single_strength": "base", "single_value": 10, "enters_open_meld": false },
+    { "play_type": "scattered", "strength": "base", "effect_value": 10, "triggered_tile_count": 1, "enters_open_meld": false }
+  ],
+  "ultimate_win": {
+    "stage": "1.0",
+    "base_multiplier": 2.0,
+    "concealed_meld_bonus": 0.5,
+    "open_meld_bonus": 0.25,
+    "low_hp_bonus": 0.5,
+    "enemy_countdown_one_bonus": 0.5,
+    "weights": {
+      "concealed_meld": "high",
+      "open_meld": "standard",
+      "pair": "medium",
+      "scattered": "low",
+      "discard": "ignored"
+    }
+  }
+}

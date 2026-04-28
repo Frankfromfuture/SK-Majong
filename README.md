@@ -1,26 +1,34 @@
 # Sangoku Mahjong
 
-三国题材 + 自创「巡目得分流」麻将 Roguelike 原型。
+三国题材 + 武将对战麻将 + Roguelike 路径与奖励 + 高动效爆发爽感原型。
 
-## Unity 主线总纲
+## Godot 主线
 
-当前主线计划已切换到 Unity PC 原型。长期开发、资产生成、规则迭代、调试表和动效框架以 [`docs/unity_development_framework.md`](docs/unity_development_framework.md) 为准。
+当前主线已切回 **Godot PC 原型**。长期开发、资产生成、规则迭代、调试表、Image 2.0 拆图流程和动效框架以 [`docs/godot_development_framework.md`](docs/godot_development_framework.md) 为准。
+
+Unity 线已废弃并移除，后续不要再使用 Unity 工程推进。
 
 ## 当前阶段
 
-Unity 主线处于 `1.0` 胡牌验证规划阶段；旧 Godot/Love2D 内容保留为历史原型和参考线。
+主线处于 `1.0` 武将对战核心 Demo 阶段：
 
-## Godot 历史原型
+- 136 张标准麻将牌。
+- 起手摸 16 张，选择 13 张作为初始手牌，剩余 3 张弃置。
+- 每回合抓 3 张，必须打出 3 张。
+- 无锁牌。
+- 打出的 3 张按优先级判定为刻子、顺子、对子+单张、散牌。
+- 顺子和刻子进入明组区；手牌中的顺子和刻子作为暗组候选。
+- 条/中造成攻击，饼/白增加防御，万/发增加金钱，风牌提供节奏效果。
+- 敌方武将按 3 回合循环行动：准备、干扰、主要攻击。
+- 胡牌触发 `Ultimate Win`：明组、暗组、将牌、散打牌按权重重算，再乘以胡牌倍率。
+- 胜利条件是敌方 HP 归零；失败条件是玩家 HP 归零。
+- 暂不启用复杂分数、花牌季牌、武将技能、武器、商店和地图。
 
-- Godot 4.3+
-- GDScript
-- 2D 像素风，逻辑 viewport 为 `640x360`
-- 核心逻辑放在 `src/core/`，不依赖 UI、Node 或 Scene
-- 测试框架计划使用 GUT
+## 运行 Demo
 
-### 运行
+安装 Godot 4.3+ 后，打开本目录的 `project.godot`，点击运行主场景。
 
-安装 Godot 4.3+ 后，打开本目录的 `project.godot`，运行主场景。
+主菜单点击 `Start Run` 进入战斗 demo。
 
 如果本机配置了 Godot CLI，可执行：
 
@@ -40,32 +48,17 @@ godot --path . --headless -s res://addons/gut/gut_cmdln.gd -gdir=res://tests -ge
 godot --path . --headless -s res://tools/data_export/export_pattern_table.gd
 ```
 
-## Love2D 内部实验原型
+## 目录
 
-新增 `love2d_proto/` 作为 Balatro-like 视觉与手感实验线，Godot 原型保留不动。
+- `src/core/`：纯规则逻辑。
+- `src/scenes/main_menu/`：主菜单。
+- `src/scenes/battle/`：1.0 战斗 demo。
+- `src/ui/`：可复用 UI 控件。
+- `assets/sprites/main_menu/`：主菜单资产。
+- `assets/sprites/battle/`：Game/Battle 战斗界面资产框架与 manifest。
+- `docs/godot_development_framework.md`：长期开发总纲。
+- `tests/`：GUT 测试。
 
-当前机器如未安装 Love2D，可先安装运行环境：
+## Love2D 历史实验
 
-```sh
-brew install --cask love
-```
-
-运行 Love2D 原型：
-
-```sh
-love love2d_proto
-```
-
-Love2D 原型使用程序生成像素 atlas，避免 AI 单图比例不可控：
-
-```sh
-python3 love2d_proto/tools/generate_ui_atlas.py
-python3 love2d_proto/tools/extract_main_menu_layers.py
-python3 love2d_proto/tools/verify_project.py
-```
-
-Lua 逻辑测试文件在 `love2d_proto/tests/logic_spec.lua`。安装 Lua 或 Love2D 后可接入测试 runner 执行。
-
-## MVP 边界
-
-MVP 只验证一个 Run 的核心循环：13 张手牌、4 巡打分、3 关战役、招贤馆、8 名武将、4 个国玺。暂不做存档、设置、本地化、Steamworks、字牌、立直、宝牌、副露或兵法系统。
+`love2d_proto/` 保留为 Balatro-like 视觉与手感实验线，仅作参考，不再作为主线推进。

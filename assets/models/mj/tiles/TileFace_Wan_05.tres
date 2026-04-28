@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://0605fa5423484040ab8b"]
+
+[ext_resource type="Texture2D" uid="uid://8f73ff16a0b641f49be5" path="res://assets/sprites/battle/Textures/TileFace_Wan_05.png" id="1_tex"]
+
+[resource]
+albedo_texture = ExtResource("1_tex")
+roughness = 0.2

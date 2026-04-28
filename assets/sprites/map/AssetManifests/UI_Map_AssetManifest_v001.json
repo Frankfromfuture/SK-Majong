@@ -1,0 +1,17 @@
+{
+  "screen": "Map",
+  "version": "v001",
+  "stage": "6.0",
+  "status": "reserved",
+  "prototypeResolution": { "width": 1920, "height": 1080 },
+  "assets": [
+    { "name": "UI_Map_Background_v001.png", "status": "pending", "node": "MapBackground" },
+    { "name": "UI_Map_PathLine_v001.png", "status": "pending", "node": "PathLine" },
+    { "name": "UI_Map_NodeBattle_v001.png", "status": "pending", "node": "NodeBattle" },
+    { "name": "UI_Map_NodeReward_v001.png", "status": "pending", "node": "NodeReward" },
+    { "name": "UI_Map_NodeShop_v001.png", "status": "pending", "node": "NodeShop" },
+    { "name": "UI_Map_NodeEvent_v001.png", "status": "pending", "node": "NodeEvent" },
+    { "name": "UI_Map_NodeBoss_v001.png", "status": "pending", "node": "NodeBoss" },
+    { "name": "UI_Map_PlayerMarker_v001.png", "status": "pending", "node": "PlayerMarker" }
+  ]
+}

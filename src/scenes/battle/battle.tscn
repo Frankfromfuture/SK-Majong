@@ -10,3 +10,156 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_battle")
+
+[node name="BattleLayout" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Guide_BattleBackground" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_right = 640.0
+offset_bottom = 360.0
+color = Color(0.05, 0.15, 0.35, 0.12)
+
+[node name="Guide_LeftStatusPanel" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 12.0
+offset_right = 128.0
+offset_bottom = 102.0
+color = Color(0.1, 0.8, 0.4, 0.18)
+
+[node name="Guide_PlayerWarlordRail" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 108.0
+offset_right = 128.0
+offset_bottom = 288.0
+color = Color(0.1, 0.8, 0.4, 0.18)
+
+[node name="Guide_RevealAreaPanel" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 136.0
+offset_top = 74.0
+offset_right = 484.0
+offset_bottom = 224.0
+color = Color(0.2, 0.7, 1, 0.16)
+
+[node name="Guide_EnemyPanel" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 492.0
+offset_top = 34.0
+offset_right = 630.0
+offset_bottom = 120.0
+color = Color(1, 0.3, 0.2, 0.16)
+
+[node name="Guide_RightSupportPanel" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 492.0
+offset_top = 126.0
+offset_right = 630.0
+offset_bottom = 288.0
+color = Color(1, 0.8, 0.15, 0.14)
+
+[node name="Guide_BottomActionPanel" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 136.0
+offset_top = 230.0
+offset_right = 484.0
+offset_bottom = 288.0
+color = Color(0.9, 0.5, 1, 0.14)
+
+[node name="Guide_HandTrayPanel" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 296.0
+offset_right = 568.0
+offset_bottom = 352.0
+color = Color(0, 1, 1, 0.14)
+
+[node name="Guide_DrawTile3DShowcase" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 438.0
+offset_top = 294.0
+offset_right = 1334.0
+offset_bottom = 742.0
+scale = Vector2(0.125, 0.125)
+color = Color(0.9, 0.9, 0.2, 0.20)
+
+[node name="Guide_HandTile3DShowcase" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 294.0
+offset_right = 1690.0
+offset_bottom = 542.0
+scale = Vector2(0.25, 0.25)
+color = Color(0, 1, 1, 0.20)
+
+[node name="Guide_TileWallPanel" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 574.0
+offset_top = 296.0
+offset_right = 632.0
+offset_bottom = 352.0
+color = Color(0.9, 0.7, 0.2, 0.18)
+
+[node name="Guide_PlayTilesButton" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 146.0
+offset_top = 260.0
+offset_right = 200.0
+offset_bottom = 280.0
+color = Color(1, 0.2, 0.1, 0.22)
+
+[node name="Guide_SortBySuitButton" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 394.0
+offset_top = 260.0
+offset_right = 458.0
+offset_bottom = 280.0
+color = Color(1, 0.2, 0.1, 0.22)
+
+[node name="Guide_UltimateWinButton" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 462.0
+offset_top = 260.0
+offset_right = 532.0
+offset_bottom = 280.0
+color = Color(1, 0.2, 0.1, 0.22)
+
+[node name="Guide_SortByRankButton" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 394.0
+offset_top = 236.0
+offset_right = 458.0
+offset_bottom = 254.0
+color = Color(1, 0.2, 0.1, 0.22)
+
+[node name="Guide_FinishBattleButton" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 536.0
+offset_top = 260.0
+offset_right = 578.0
+offset_bottom = 280.0
+color = Color(1, 0.2, 0.1, 0.22)
+
+[node name="Guide_NewRunButton" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 536.0
+offset_top = 236.0
+offset_right = 578.0
+offset_bottom = 254.0
+color = Color(1, 0.2, 0.1, 0.22)
+
+[node name="Guide_MainMenuButton" type="ColorRect" parent="BattleLayout"]
+layout_mode = 0
+offset_left = 582.0
+offset_top = 8.0
+offset_right = 628.0
+offset_bottom = 28.0
+color = Color(1, 0.2, 0.1, 0.22)

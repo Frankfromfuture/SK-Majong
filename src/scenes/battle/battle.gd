@@ -1,487 +1,868 @@
+@tool
 extends Control
 
-const AnimatedButtonScript = preload("res://src/ui/animated_button.gd")
-const HudBadgeScript = preload("res://src/ui/hud_badge.gd")
-const LayeredBackgroundScript = preload("res://src/ui/layered_background.gd")
-const ModifierBadgeScript = preload("res://src/ui/modifier_badge.gd")
-const PreviewRowScript = preload("res://src/ui/preview_row.gd")
-const ScorePopupScript = preload("res://src/ui/score_popup.gd")
-const TileCardScript = preload("res://src/ui/tile_card.gd")
+const DuelBattleStateScript = preload("res://src/core/duel_battle_state.gd")
+const MahjongTileShowcase3DScript = preload("res://src/ui/mahjong_tile_showcase_3d.gd")
 
-const ENGLISH_PATTERNS := {
-	"single": "SINGLE",
-	"pair": "PAIR",
-	"taatsu": "OPEN WAIT",
-	"triplet": "TRIPLET",
-	"sequence": "SEQUENCE",
-	"two_pairs": "TWO PAIRS",
-	"sanshoku_set": "TRI-SUIT SET",
-	"iipeikou": "DOUBLE RUN",
-	"kan": "KAN",
-	"iitsu": "FULL STRAIGHT",
-	"chinitsu_group": "PURE COLOR",
-	"yakuman": "YAKUMAN",
-}
+const HAND_LEFT_RECT := Rect2(10, 294, 1680, 248)
+const HAND_CENTER_RECT := Rect2(78, 294, 1680, 248)
+const DRAW_RIGHT_RECT := Rect2(438, 294, 896, 448)
+const HAND_TILE_LEFT_START := 18
+const HAND_TILE_CENTER_START := 86
+const HAND_TILE_SPACING := 31
+const DRAW_TILE_START := 444
+const DRAW_TILE_SPACING := 34
+const MERGE_GHOST_SIZE := Vector2(360, 248)
+const TILE_SHOWCASE_SCALE := 0.30
+const DRAW_SHOWCASE_SCALE := 0.15
+const MERGE_GHOST_SCALE := Vector2(0.18, 0.18)
+const MERGE_GHOST_TARGET_SCALE := Vector2(0.135, 0.135)
+const DRAW_INTRO_HOLD := 0.50
+const DRAW_INSERT_DURATION := 0.50
+const DRAW_FADE_DURATION := 0.18
+const HAND_RECENTER_DURATION := 0.32
 
-var battle: BattleState
-var selected_cards: Array[TileCard] = []
-var round_badge: HudBadge
-var score_badge: HudBadge
-var target_badge: HudBadge
-var preview_pattern_row: PreviewRow
-var preview_base_row: PreviewRow
-var preview_mult_row: PreviewRow
-var preview_score_row: PreviewRow
-var hand_value_label: Label
-var discards_left_label: Label
-var play_button: Button
-var hand_row: HBoxContainer
-var play_area: PanelContainer
-var play_area_tile_row: HBoxContainer
-var score_burst_label: Label
-var multiplier_burst_label: Label
-var screen_shake_layer: Control
-var fx_layer: Control
-var _time := 0.0
-var _last_preview: Dictionary = {}
+const FLOWER_BUFFS := ["Plum", "Orchid", "Bamboo", "Chrysanthemum"]
+const SEASON_BUFFS := ["Spring", "Summer", "Autumn", "Winter"]
+
+var state: DuelBattleState
+var selected := {}
+var hovered := {}
+var seed := 136001
+
+var round_value: Label
+var player_hp_value: Label
+var defense_value: Label
+var money_value: Label
+var enemy_hp_value: Label
+var enemy_attack_countdown_value: Label
+var pattern_burst_label: Label
+var status_value: Label
+var mode_value: Label
+var play_tiles_button: Button
+var ultimate_button: Button
+var hand_layer: Control
+var draw_layer: Control
+var hand_3d_showcase: SubViewportContainer
+var draw_3d_showcase: SubViewportContainer
+var played_meld_layer: Control
+var hits_panel: Control
+var layout_guides: Control
+var _is_resolving_turn := false
+var _is_auto_merging_draw := false
+var _draw_merge_generation := 0
+var _draw_merge_elapsed := 0.0
+var _draw_merge_tween: Tween
+var _draw_fade_tween: Tween
+var _editor_refresh_cooldown := 0.0
+var _last_guide_signature := ""
+var _is_building_editor_preview := false
 
 
 func _ready() -> void:
-	battle = BattleState.new(60000, 4242)
-	battle.hand.sort_in_place()
-	_build_battle_ui()
-	_refresh_hand()
-	_update_preview()
+	if not Engine.is_editor_hint():
+		get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
+	_start_new_run()
 
 
 func _process(delta: float) -> void:
-	_time += delta
-	if play_area != null:
-		play_area.rotation_degrees = sin(_time * 1.2) * 0.25
-	if score_burst_label != null and selected_cards.is_empty():
-		score_burst_label.scale = Vector2.ONE * (1.0 + sin(_time * 2.4) * 0.015)
+	if _is_auto_merging_draw:
+		_draw_merge_elapsed += delta
+		if _draw_merge_elapsed >= DRAW_INTRO_HOLD + DRAW_INSERT_DURATION + DRAW_FADE_DURATION + 0.08:
+			_finish_auto_draw_merge(_draw_merge_generation)
+	elif _should_auto_merge_draw():
+		_start_auto_draw_merge()
+
+	if not Engine.is_editor_hint():
+		return
+	if layout_guides == null or _is_building_editor_preview:
+		return
+	_editor_refresh_cooldown -= delta
+	if _editor_refresh_cooldown > 0.0:
+		return
+	var signature := _guide_signature()
+	if not _last_guide_signature.is_empty() and signature != _last_guide_signature:
+		_editor_refresh_cooldown = 0.08
+		_build_ui()
+		return
+	_last_guide_signature = signature
 
 
-func _build_battle_ui() -> void:
+func _start_new_run() -> void:
+	state = DuelBattleStateScript.new()
+	state.start_run(seed)
+	selected.clear()
+	hovered.clear()
+	_build_ui()
+	_set_status("Opening auto-kept 13 from 16. Draw 3, play exactly 3.")
+
+
+func _build_ui() -> void:
+	_is_building_editor_preview = Engine.is_editor_hint()
+	if _is_auto_merging_draw:
+		_is_auto_merging_draw = false
+		_draw_merge_generation += 1
 	for child in get_children():
-		child.queue_free()
+		if child.name != "BattleLayout":
+			child.queue_free()
 
-	screen_shake_layer = Control.new()
-	screen_shake_layer.name = "ScreenShakeLayer"
-	screen_shake_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(screen_shake_layer)
+	layout_guides = get_node_or_null("BattleLayout") as Control
+	if layout_guides != null:
+		layout_guides.visible = Engine.is_editor_hint()
+		layout_guides.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var background: LayeredBackground = LayeredBackgroundScript.new()
-	background.name = "BackgroundLayer"
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	screen_shake_layer.add_child(background)
+	var root := Control.new()
+	root.name = "BattleRoot"
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(root)
 
-	var decoration_layer := Control.new()
-	decoration_layer.name = "DecorationLayer"
-	decoration_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
-	decoration_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	screen_shake_layer.add_child(decoration_layer)
+	_panel(root, "BattleBackground", _guide_rect("BattleBackground", Rect2(0, 0, 640, 360)), Color(0.035, 0.023, 0.026))
+	_panel(root, "LeftStatusPanel", _guide_rect("LeftStatusPanel", Rect2(8, 12, 120, 90)), Color(0.10, 0.14, 0.12))
+	_panel(root, "PlayerWarlordRail", _guide_rect("PlayerWarlordRail", Rect2(8, 108, 120, 180)), Color(0.09, 0.12, 0.11))
+	_panel(root, "RevealAreaPanel", _guide_rect("RevealAreaPanel", Rect2(136, 74, 348, 150)), Color(0.075, 0.052, 0.045))
+	_panel(root, "EnemyPanel", _guide_rect("EnemyPanel", Rect2(492, 34, 138, 86)), Color(0.13, 0.08, 0.07))
+	_panel(root, "RightSupportPanel", _guide_rect("RightSupportPanel", Rect2(492, 126, 138, 162)), Color(0.08, 0.11, 0.10))
+	_panel(root, "BottomActionPanel", _guide_rect("BottomActionPanel", Rect2(136, 230, 348, 58)), Color(0.07, 0.07, 0.065, 0.88))
+	_panel(root, "HandTrayPanel", _guide_rect("HandTrayPanel", Rect2(8, 296, 560, 56)), Color(0.055, 0.052, 0.048))
 
-	var hud_layer := Control.new()
-	hud_layer.name = "HudLayer"
-	hud_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
-	screen_shake_layer.add_child(hud_layer)
-
-	var interaction_layer := Control.new()
-	interaction_layer.name = "InteractionLayer"
-	interaction_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
-	screen_shake_layer.add_child(interaction_layer)
-
-	fx_layer = Control.new()
-	fx_layer.name = "FxLayer"
-	fx_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
-	fx_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(fx_layer)
-
-	_build_title_cluster(decoration_layer)
-	_build_hud(hud_layer)
-	_build_modifier_row(interaction_layer)
-	_build_play_area(interaction_layer)
-	_build_preview_panel(interaction_layer)
-	_build_hand_row(interaction_layer)
-	_build_bottom_status(interaction_layer)
-
-
-func _build_title_cluster(parent: Control) -> void:
-	var seal := Label.new()
-	seal.name = "BattleSealMark"
-	seal.text = "三\n国"
-	seal.position = Vector2(16, 20)
-	seal.add_theme_font_size_override("font_size", 17)
-	seal.add_theme_color_override("font_color", Color(1.0, 0.18, 0.12))
-	parent.add_child(seal)
-
-	var title := Label.new()
-	title.name = "BattleLogoTitle"
-	title.text = "Sangoku\nMahjong"
-	title.position = Vector2(52, 26)
-	title.size = Vector2(190, 84)
-	title.add_theme_font_size_override("font_size", 28)
-	title.add_theme_color_override("font_color", Color(1.0, 0.72, 0.18))
-	title.add_theme_color_override("font_shadow_color", Color.BLACK)
-	title.add_theme_constant_override("shadow_offset_x", 3)
-	title.add_theme_constant_override("shadow_offset_y", 3)
-	parent.add_child(title)
-
-
-func _build_hud(parent: Control) -> void:
-	round_badge = HudBadgeScript.new()
-	round_badge.name = "RoundBadge"
-	round_badge.setup("ROUND", "1 / 4", 112)
-	round_badge.position = Vector2(238, 12)
-	parent.add_child(round_badge)
-
-	score_badge = HudBadgeScript.new()
-	score_badge.name = "ScoreBadge"
-	score_badge.setup("SCORE", "0", 150)
-	score_badge.position = Vector2(356, 12)
-	score_badge.value_label.name = "ScoreValue"
-	parent.add_child(score_badge)
-
-	target_badge = HudBadgeScript.new()
-	target_badge.name = "TargetBadge"
-	target_badge.setup("TARGET", "60,000", 112)
-	target_badge.position = Vector2(512, 12)
-	parent.add_child(target_badge)
-
-
-func _build_modifier_row(parent: Control) -> void:
-	var row := HBoxContainer.new()
-	row.name = "ModifierRow"
-	row.position = Vector2(238, 58)
-	row.size = Vector2(294, 34)
-	row.add_theme_constant_override("separation", 6)
-	parent.add_child(row)
-	for data in [["GeneralSlotBadge", "GENERAL SLOT"], ["BaseModBadge", "+BASE"], ["MultModBadge", "xMULT"], ["ChainModBadge", "CHAIN"]]:
-		var badge: ModifierBadge = ModifierBadgeScript.new()
-		badge.name = data[0]
-		badge.setup(data[1], 70 if data[0] != "GeneralSlotBadge" else 100)
-		row.add_child(badge)
-
-
-func _build_play_area(parent: Control) -> void:
-	play_area = PanelContainer.new()
-	play_area.name = "PlayAreaPanel"
-	play_area.position = Vector2(228, 100)
-	play_area.size = Vector2(282, 142)
-	play_area.add_theme_stylebox_override("panel", _panel_box(Color(0.08, 0.025, 0.03, 0.80), Color(0.95, 0.38, 0.10), 2))
-	parent.add_child(play_area)
-
-	var stack := VBoxContainer.new()
-	stack.name = "PlayAreaStack"
-	stack.alignment = BoxContainer.ALIGNMENT_CENTER
-	stack.add_theme_constant_override("separation", 4)
-	play_area.add_child(stack)
-
-	var title := Label.new()
-	title.name = "PlayAreaTitle"
-	title.text = "PLAY AREA"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 11)
-	title.add_theme_color_override("font_color", Color(0.52, 1.0, 0.68))
-	stack.add_child(title)
-
-	score_burst_label = Label.new()
-	score_burst_label.name = "ScoreBurstLabel"
-	score_burst_label.text = "SELECT A SET"
-	score_burst_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	score_burst_label.add_theme_font_size_override("font_size", 28)
-	score_burst_label.add_theme_color_override("font_color", Color(1.0, 0.73, 0.18))
-	score_burst_label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.85))
-	score_burst_label.add_theme_constant_override("shadow_offset_x", 3)
-	score_burst_label.add_theme_constant_override("shadow_offset_y", 3)
-	stack.add_child(score_burst_label)
-
-	multiplier_burst_label = Label.new()
-	multiplier_burst_label.name = "MultiplierBurstLabel"
-	multiplier_burst_label.text = "x0 MULTIPLIER"
-	multiplier_burst_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	multiplier_burst_label.add_theme_font_size_override("font_size", 15)
-	multiplier_burst_label.add_theme_color_override("font_color", Color(0.35, 1.0, 0.58))
-	stack.add_child(multiplier_burst_label)
-
-	play_area_tile_row = HBoxContainer.new()
-	play_area_tile_row.name = "PlayedTileEchoRow"
-	play_area_tile_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	play_area_tile_row.add_theme_constant_override("separation", 5)
-	stack.add_child(play_area_tile_row)
-
-
-func _build_preview_panel(parent: Control) -> void:
-	var panel := PanelContainer.new()
-	panel.name = "ScorePreviewPanel"
-	panel.position = Vector2(520, 82)
-	panel.size = Vector2(112, 198)
-	panel.add_theme_stylebox_override("panel", _panel_box(Color(0.030, 0.052, 0.046, 0.95), Color(0.75, 0.38, 0.12), 2))
-	parent.add_child(panel)
-
-	var stack := VBoxContainer.new()
-	stack.name = "ScorePreviewStack"
-	stack.add_theme_constant_override("separation", 5)
-	panel.add_child(stack)
-
-	var title := Label.new()
-	title.name = "ScorePreviewTitle"
-	title.text = "Score Preview"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 12)
-	title.add_theme_color_override("font_color", Color(0.54, 1.0, 0.68))
-	stack.add_child(title)
-
-	preview_pattern_row = _preview_row("Pattern", "SELECT", "PreviewPatternValue")
-	preview_base_row = _preview_row("Base", "0", "PreviewBaseValue")
-	preview_mult_row = _preview_row("Mult", "x0", "PreviewMultiplierValue")
-	preview_score_row = _preview_row("Total", "0", "PreviewScoreValue")
-	stack.add_child(preview_pattern_row)
-	stack.add_child(preview_base_row)
-	stack.add_child(preview_mult_row)
-	stack.add_child(preview_score_row)
-
-	play_button = AnimatedButtonScript.new()
-	play_button.name = "PlaySetButton"
-	play_button.text = "PLAY SET"
-	play_button.custom_minimum_size = Vector2(88, 30)
-	play_button.pressed.connect(_on_play_pressed)
-	stack.add_child(play_button)
-
-	var back_button: Button = AnimatedButtonScript.new()
-	back_button.name = "MenuButton"
-	back_button.text = "MENU"
-	back_button.custom_minimum_size = Vector2(88, 24)
-	back_button.pressed.connect(func() -> void: get_tree().change_scene_to_file("res://src/scenes/main_menu/main.tscn"))
-	stack.add_child(back_button)
-
-
-func _build_hand_row(parent: Control) -> void:
-	hand_row = HBoxContainer.new()
-	hand_row.name = "HandTileRow"
-	hand_row.position = Vector2(132, 292)
-	hand_row.size = Vector2(472, 62)
-	hand_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	hand_row.add_theme_constant_override("separation", 4)
-	parent.add_child(hand_row)
-
-
-func _build_bottom_status(parent: Control) -> void:
-	var discard_panel := PanelContainer.new()
-	discard_panel.name = "DiscardPanel"
-	discard_panel.position = Vector2(16, 300)
-	discard_panel.size = Vector2(100, 48)
-	discard_panel.add_theme_stylebox_override("panel", _panel_box(Color(0.04, 0.04, 0.038, 0.92), Color(0.58, 0.28, 0.09), 2))
-	parent.add_child(discard_panel)
-
-	var discard_stack := VBoxContainer.new()
-	discard_stack.name = "DiscardStack"
-	discard_stack.alignment = BoxContainer.ALIGNMENT_CENTER
-	discard_panel.add_child(discard_stack)
-
-	var discard_title := Label.new()
-	discard_title.name = "DiscardTitle"
-	discard_title.text = "DISCARD"
-	discard_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	discard_title.add_theme_font_size_override("font_size", 10)
-	discard_title.add_theme_color_override("font_color", Color(0.75, 0.84, 0.65))
-	discard_stack.add_child(discard_title)
-
-	discards_left_label = Label.new()
-	discards_left_label.name = "DiscardsLeftValue"
-	discards_left_label.text = "0"
-	discards_left_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	discards_left_label.add_theme_font_size_override("font_size", 18)
-	discards_left_label.add_theme_color_override("font_color", Color(1.0, 0.72, 0.24))
-	discard_stack.add_child(discards_left_label)
-
-	hand_value_label = Label.new()
-	hand_value_label.name = "HandValueLabel"
-	hand_value_label.text = "HAND VALUE 0"
-	hand_value_label.position = Vector2(526, 304)
-	hand_value_label.size = Vector2(104, 22)
-	hand_value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hand_value_label.add_theme_font_size_override("font_size", 11)
-	hand_value_label.add_theme_color_override("font_color", Color(0.78, 0.92, 0.72))
-	parent.add_child(hand_value_label)
-
-
-func _preview_row(label_text: String, value_text: String, value_name: String) -> PreviewRow:
-	var row: PreviewRow = PreviewRowScript.new()
-	row.name = value_name.replace("Value", "Row")
-	row.setup(label_text, value_text, value_name)
-	return row
-
-
-func _refresh_hand() -> void:
-	for child in hand_row.get_children():
-		child.queue_free()
-	selected_cards.clear()
-	battle.hand.sort_in_place()
-	for i in range(battle.hand.tiles.size()):
-		var card: TileCard = TileCardScript.new()
-		card.name = "TileCard_%02d" % i
-		card.setup(battle.hand.tiles[i], i)
-		card.card_pressed.connect(_on_tile_pressed)
-		hand_row.add_child(card)
+	_build_stage_header(root)
+	_build_left_status(root)
+	_build_future_bars(root)
+	_build_reveal_area(root)
+	_build_enemy_panel(root)
+	_build_played_meld_ledger(root)
+	_build_tile_rows(root)
+	_build_tile_wall(root)
+	_build_buttons(root)
 	_update_hud()
+	if _should_auto_merge_draw():
+		_start_auto_draw_merge()
+	if layout_guides != null and Engine.is_editor_hint():
+		layout_guides.move_to_front()
+		_last_guide_signature = _guide_signature()
+	_is_building_editor_preview = false
 
 
-func _on_tile_pressed(card: TileCard) -> void:
-	if selected_cards.has(card):
-		selected_cards.erase(card)
-		card.set_selected(false)
-	elif selected_cards.size() < TurnState.MAX_PLAYED_TILES:
-		selected_cards.append(card)
-		card.set_selected(true)
-		card.flash()
-	_update_play_area_echo()
-	_update_preview()
+func _build_stage_header(parent: Control) -> void:
+	_panel(parent, "StageNameBadge", Rect2(228, 8, 184, 24), Color(0.13, 0.17, 0.13))
+	_label(parent, "StageNameBadgeText", "1-1 TRAINING", Rect2(238, 10, 164, 20), 13, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
+	_panel(parent, "TurnBarPanel", Rect2(240, 38, 160, 22), Color(0.10, 0.13, 0.12))
+	round_value = _label(parent, "RoundValue", "", Rect2(254, 40, 132, 18), 10, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "StageTypeIcon", "DUEL", Rect2(166, 12, 48, 16), 8, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "StageModifierLabel", "No modifier", Rect2(416, 12, 78, 16), 7, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "StageRewardPreview", "Reward preview", Rect2(416, 30, 78, 14), 6, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+	_button(parent, "PatternToggleButton", "RULES", Rect2(582, 264, 46, 20), _on_rules_pressed)
 
 
-func _update_play_area_echo() -> void:
-	for child in play_area_tile_row.get_children():
-		child.queue_free()
-	for i in range(selected_cards.size()):
-		var echo := Label.new()
-		echo.name = "PlayedTileEcho_%02d" % i
-		echo.text = selected_cards[i].tile.display_name()
-		echo.custom_minimum_size = Vector2(38, 28)
-		echo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		echo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		echo.add_theme_font_size_override("font_size", 13)
-		echo.add_theme_color_override("font_color", Color(0.12, 0.06, 0.03))
-		echo.add_theme_stylebox_override("normal", _panel_box(Color(0.95, 0.82, 0.55, 0.96), Color(0.18, 0.72, 0.34), 1))
-		play_area_tile_row.add_child(echo)
+func _build_left_status(parent: Control) -> void:
+	_label(parent, "MoneyPanelLabel", "$", Rect2(16, 18, 18, 18), 13, Color(1.0, 0.86, 0.20), HORIZONTAL_ALIGNMENT_CENTER)
+	money_value = _label(parent, "MoneyValue", "", Rect2(34, 18, 82, 18), 13, Color(1.0, 0.86, 0.20), HORIZONTAL_ALIGNMENT_LEFT)
+	_metric(parent, "PlayerHpPanel", "Player HP", "", Rect2(18, 42, 96, 24))
+	player_hp_value = _label(parent, "PlayerHpValue", "", Rect2(72, 48, 38, 12), 8, Color.WHITE, HORIZONTAL_ALIGNMENT_RIGHT)
+	_metric(parent, "DefensePanel", "DEF / Tempo", "", Rect2(18, 70, 96, 24))
+	defense_value = _label(parent, "DefenseValue", "", Rect2(72, 76, 38, 12), 8, Color(0.64, 0.92, 1.0), HORIZONTAL_ALIGNMENT_RIGHT)
 
 
-func _update_preview() -> void:
-	var tiles := _selected_tiles()
-	_last_preview = PatternMatcher.match_pattern(tiles)
-	if _last_preview.is_empty():
-		var empty_text := "INVALID" if not tiles.is_empty() else "SELECT"
-		preview_pattern_row.set_value(empty_text)
-		preview_base_row.set_value("0")
-		preview_mult_row.set_value("x0")
-		preview_score_row.set_value("0")
-		play_button.disabled = true
-		score_burst_label.text = "SELECT A SET" if tiles.is_empty() else "INVALID SET"
-		multiplier_burst_label.text = "x0 MULTIPLIER"
-		hand_value_label.text = "HAND VALUE 0"
+func _build_future_bars(parent: Control) -> void:
+	_panel(parent, "WarlordBar", Rect2(16, 116, 104, 160), Color(0.18, 0.20, 0.18, 0.72))
+	for i in range(3):
+		var y := 124 + i * 50
+		_slot(parent, "WarlordSlot_%02d" % i, Rect2(22, y, 36, 36), "4.0")
+		_label(parent, "WarlordPortrait_%02d" % i, "?", Rect2(22, y, 36, 24), 13, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+		_label(parent, "WarlordNameLabel_%02d" % i, "Hero", Rect2(20, y + 25, 40, 9), 5, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+		_slot(parent, "WarlordTriggerGlow_%02d" % i, Rect2(20, y - 2, 40, 40), "Glow")
+		_slot(parent, "WeaponSlot_%02d_A" % i, Rect2(66, y + 2, 18, 16), "4.0")
+		_slot(parent, "WeaponSlot_%02d_B" % i, Rect2(88, y + 2, 18, 16), "4.0")
+		_label(parent, "WeaponIcon_%02d_A" % i, "W", Rect2(66, y + 2, 18, 16), 6, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+		_label(parent, "WeaponIcon_%02d_B" % i, "W", Rect2(88, y + 2, 18, 16), 6, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+		_slot(parent, "WeaponMarkOverlay_%02d_A" % i, Rect2(65, y + 1, 20, 18), "Mark")
+		_slot(parent, "WeaponMarkOverlay_%02d_B" % i, Rect2(87, y + 1, 20, 18), "Mark")
+
+	_panel(parent, "FlowerSeasonBuffBar", Rect2(500, 134, 122, 58), Color(0.18, 0.20, 0.18, 0.72))
+	_label(parent, "FlowerSeasonBuffTitle", "SEASON / FLOWER", Rect2(506, 138, 110, 12), 8, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
+	for i in range(8):
+		var x := 508 + (i % 4) * 27
+		var y := 154 + int(i / 4) * 17
+		_slot(parent, "BuffSlot_%02d" % i, Rect2(x, y, 20, 14), "3.0")
+		_label(parent, "BuffValueLabel_%02d" % i, "-", Rect2(x, y, 20, 14), 7, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+		if i < FLOWER_BUFFS.size():
+			_label(parent, "BuffIcon_Flower_%s" % FLOWER_BUFFS[i], "F", Rect2(x, y - 9, 20, 9), 5, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+		else:
+			_label(parent, "BuffIcon_Season_%s" % SEASON_BUFFS[i - FLOWER_BUFFS.size()], "S", Rect2(x, y - 9, 20, 9), 5, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+
+	_panel(parent, "ConsumableBar", Rect2(500, 202, 122, 52), Color(0.18, 0.20, 0.18, 0.72))
+	_label(parent, "ConsumableBarTitle", "ITEMS", Rect2(506, 206, 110, 12), 8, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
+	for i in range(3):
+		var x := 512 + i * 34
+		_slot(parent, "ConsumableSlot_%02d" % i, Rect2(x, 222, 24, 22), "5.0")
+		_label(parent, "ConsumableCountLabel_%02d" % i, "0", Rect2(x + 12, 234, 12, 8), 5, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+
+
+func _build_reveal_area(parent: Control) -> void:
+	_label(parent, "RevealAreaTitle", "BATTLE", Rect2(146, 82, 328, 16), 13, Color.CYAN, HORIZONTAL_ALIGNMENT_CENTER)
+	_panel(parent, "PlayerConditionPanel", Rect2(146, 100, 92, 16), Color(0.10, 0.13, 0.12))
+	_label(parent, "PlayerConditionValue", "Condition", Rect2(150, 101, 84, 14), 7, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
+	_panel(parent, "EnemyConditionPanel", Rect2(382, 100, 92, 16), Color(0.10, 0.13, 0.12))
+	_label(parent, "EnemyConditionValue", "Condition", Rect2(386, 101, 84, 14), 7, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
+	_panel(parent, "AllyUnit_00", Rect2(164, 146, 32, 28), Color(0.07, 0.16, 0.11, 0.78))
+	_label(parent, "AllyUnitLabel_00", "P1", Rect2(164, 147, 32, 18), 10, Color(0.68, 1.0, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
+	_panel(parent, "AllyUnit_01", Rect2(218, 126, 32, 28), Color(0.07, 0.16, 0.11, 0.78))
+	_label(parent, "AllyUnitLabel_01", "P2", Rect2(218, 127, 32, 18), 10, Color(0.68, 1.0, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
+	_panel(parent, "AllyUnit_02", Rect2(272, 146, 32, 28), Color(0.07, 0.16, 0.11, 0.78))
+	_label(parent, "AllyUnitLabel_02", "P3", Rect2(272, 147, 32, 18), 10, Color(0.68, 1.0, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
+	_panel(parent, "EnemyWarlordUnit", Rect2(404, 134, 42, 34), Color(0.18, 0.08, 0.06, 0.82))
+	_label(parent, "EnemyUnitSprite", "EN", Rect2(404, 136, 42, 22), 11, Color(1.0, 0.48, 0.36), HORIZONTAL_ALIGNMENT_CENTER)
+	_panel(parent, "EnemyIntentBox", Rect2(370, 174, 104, 34), Color(0.13, 0.08, 0.07))
+	_label(parent, "EnemyIntentBoxValue", "ATK %d\nDEF 30" % state.enemy_attack, Rect2(376, 176, 92, 28), 9, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
+	pattern_burst_label = _label(parent, "PatternBurstLabel", "", Rect2(166, 114, 288, 28), 21, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+	_panel(parent, "ConcealedMeldHintPanel", Rect2(146, 208, 78, 14), Color(0.10, 0.13, 0.12))
+	_label(parent, "ConcealedMeldHintValue", "Dark %d" % _concealed_hint_count(), Rect2(150, 208, 70, 12), 6, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
+	_panel(parent, "PairCandidateHintPanel", Rect2(230, 208, 66, 14), Color(0.10, 0.13, 0.12))
+	_label(parent, "PairCandidateHintValue", "Pairs %d" % _pair_hint_count(), Rect2(234, 208, 58, 12), 6, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
+	_panel(parent, "ShantenBadge", Rect2(302, 208, 56, 14), Color(0.10, 0.13, 0.12))
+	_label(parent, "ShantenValue", "Ready" if state.can_ultimate_win() else "Build", Rect2(306, 208, 48, 12), 6, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
+	_panel(parent, "WinMultiplierBadge", Rect2(364, 208, 62, 14), Color(0.10, 0.13, 0.12))
+	_label(parent, "WinMultiplierValue", "x%.2f" % state.current_win_multiplier(), Rect2(368, 208, 54, 12), 6, Color(1.0, 0.42, 0.32), HORIZONTAL_ALIGNMENT_CENTER)
+	mode_value = _label(parent, "ModeValue", "", Rect2(146, 232, 328, 12), 8, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
+	status_value = _label(parent, "StatusValue", "", Rect2(146, 244, 328, 10), 8, Color(0.78, 1.0, 0.76), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "DrawLabel", "MELD / DRAW 3", Rect2(146, 254, 100, 12), 8, Color.CYAN)
+	_label(parent, "HandLabel", "HAND", Rect2(16, 286, 80, 10), 8, Color.CYAN)
+
+
+func _build_enemy_panel(parent: Control) -> void:
+	_label(parent, "EnemyNameLabel", "ENEMY WARLORD", Rect2(500, 42, 122, 16), 10, Color(1.0, 0.72, 0.18), HORIZONTAL_ALIGNMENT_CENTER)
+	_metric(parent, "EnemyHpPanel", "Enemy HP", "", Rect2(502, 62, 118, 24))
+	enemy_hp_value = _label(parent, "EnemyHpValue", "", Rect2(574, 68, 42, 12), 8, Color(1.0, 0.42, 0.32), HORIZONTAL_ALIGNMENT_RIGHT)
+	_metric(parent, "EnemyAttackCountdownPanel", "Intent", "", Rect2(502, 88, 118, 24))
+	enemy_attack_countdown_value = _label(parent, "EnemyAttackCountdownValue", "", Rect2(574, 94, 42, 12), 8, Color.WHITE, HORIZONTAL_ALIGNMENT_RIGHT)
+	_label(parent, "EnemyIntentLabel", "3-turn action cycle", Rect2(500, 116, 122, 10), 6, Color(0.80, 0.82, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "EnemyAttackValue", "ATK %d" % state.enemy_attack, Rect2(500, 126, 122, 12), 8, Color(1.0, 0.42, 0.32), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "EnemyHpMirrorValue", "", Rect2(500, 138, 122, 10), 6, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
+
+
+func _build_played_meld_ledger(parent: Control) -> void:
+	_panel(parent, "OpenMeldLedgerPanel", Rect2(210, 252, 116, 32), Color(0.08, 0.11, 0.10))
+	_label(parent, "OpenMeldLedgerTitle", "OPEN MELDS", Rect2(216, 254, 104, 10), 7, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
+	played_meld_layer = Control.new()
+	played_meld_layer.name = "OpenMeldLedgerList"
+	parent.add_child(played_meld_layer)
+
+	var rows: int = min(2, state.open_melds.size())
+	for i in range(rows):
+		var meld: Dictionary = state.open_melds[state.open_melds.size() - rows + i]
+		var effect := "%s %+d" % [str(meld.get("effect_type", "none")).capitalize(), int(meld.get("effect_value", 0))]
+		_label(played_meld_layer, "OpenMeldRow_%02d" % i, "%s  %s" % [meld.get("name", "Meld"), effect], Rect2(216, 264 + i * 9, 104, 8), 5, Color.WHITE)
+
+
+func _build_tile_rows(parent: Control) -> void:
+	var draw_rect := _guide_rect("DrawTile3DShowcase", DRAW_RIGHT_RECT)
+	draw_3d_showcase = MahjongTileShowcase3DScript.new()
+	draw_3d_showcase.name = "DrawTile3DShowcase"
+	draw_3d_showcase.position = draw_rect.position
+	draw_3d_showcase.size = draw_rect.size
+	draw_3d_showcase.scale = Vector2(DRAW_SHOWCASE_SCALE, DRAW_SHOWCASE_SCALE)
+	draw_3d_showcase.visible = _should_show_draw_tiles()
+	parent.add_child(draw_3d_showcase)
+	draw_3d_showcase.connect("tile_hovered", _on_tile_hovered)
+	draw_3d_showcase.connect("tile_pressed", _on_tile_pressed)
+	draw_3d_showcase.setup_tiles(state.drawn, selected, hovered, DuelBattleState.TileZone.DRAW)
+
+	draw_layer = Control.new()
+	draw_layer.name = "DrawTileLayer"
+	draw_layer.position = Vector2.ZERO
+	draw_layer.visible = _should_show_draw_tiles()
+	parent.add_child(draw_layer)
+	for i in range(state.drawn.size()):
+		var rect := Rect2(DRAW_TILE_START + i * DRAW_TILE_SPACING, 304, 28, 40)
+		_tile_button(draw_layer, DuelBattleState.TileZone.DRAW, i, state.drawn[i], rect)
+
+	var hand_rect := _hand_showcase_rect()
+	hand_3d_showcase = MahjongTileShowcase3DScript.new()
+	hand_3d_showcase.name = "HandTile3DShowcase"
+	hand_3d_showcase.position = hand_rect.position
+	hand_3d_showcase.size = hand_rect.size
+	hand_3d_showcase.scale = Vector2(TILE_SHOWCASE_SCALE, TILE_SHOWCASE_SCALE)
+	parent.add_child(hand_3d_showcase)
+	hand_3d_showcase.connect("tile_hovered", _on_tile_hovered)
+	hand_3d_showcase.connect("tile_pressed", _on_tile_pressed)
+	hand_3d_showcase.setup_tiles(state.hand.tiles, selected, hovered, DuelBattleState.TileZone.HAND)
+
+	hand_layer = Control.new()
+	hand_layer.name = "HandTileLayer"
+	hand_layer.position = Vector2.ZERO
+	parent.add_child(hand_layer)
+	var hand_start := HAND_TILE_CENTER_START
+	for i in range(state.hand.tiles.size()):
+		var rect := Rect2(hand_start + i * HAND_TILE_SPACING, 304, 30, 42)
+		_tile_button(hand_layer, DuelBattleState.TileZone.HAND, i, state.hand.tiles[i], rect)
+
+
+func _build_tile_wall(parent: Control) -> void:
+	var wall_rect := _guide_rect("TileWallPanel", Rect2(574, 296, 58, 56))
+	_panel(parent, "TileWallPanel", wall_rect, Color(0.08, 0.11, 0.10))
+	_label(parent, "TileWallLabel", "WALL", Rect2(578, 299, 50, 10), 7, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
+	for i in range(10):
+		var col := i % 5
+		var row := int(i / 5)
+		_panel(parent, "TileWallTile_%02d" % i, Rect2(580 + col * 9, 314 + row * 13, 8, 12), Color(0.78, 0.70, 0.52))
+	_label(parent, "TileWallCount", "%d" % state.remaining_deck(), Rect2(578, 338, 50, 10), 6, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
+
+
+func _should_show_draw_tiles() -> bool:
+	return state != null and state.drawn.size() > 0 and not _is_resolving_turn
+
+
+func _should_auto_merge_draw() -> bool:
+	return state != null and state.drawn.size() > 0 and not _is_auto_merging_draw
+
+
+func _hand_showcase_rect() -> Rect2:
+	var guide := _guide_rect("HandTile3DShowcase", HAND_CENTER_RECT)
+	return Rect2(HAND_CENTER_RECT.position, guide.size)
+
+
+func _build_buttons(parent: Control) -> void:
+	play_tiles_button = _button(parent, "PlayTilesButton", "PLAY", _guide_rect("PlayTilesButton", Rect2(146, 260, 54, 20)), _on_play_tiles_pressed)
+	_button(parent, "SortBySuitButton", "SORT SUIT", _guide_rect("SortBySuitButton", Rect2(394, 260, 64, 20)), _on_sort_suit_pressed)
+	ultimate_button = _button(parent, "UltimateWinButton", "ULTIMATE", _guide_rect("UltimateWinButton", Rect2(462, 260, 70, 20)), _on_ultimate_pressed)
+	_button(parent, "HitsButton", "HITS", _guide_rect("HitsButton", Rect2(536, 260, 42, 20)), _on_hits_pressed)
+	_button(parent, "MainMenuButton", "MENU", _guide_rect("MainMenuButton", Rect2(582, 8, 46, 20)), func() -> void:
+		get_tree().change_scene_to_file("res://src/scenes/main_menu/main.tscn")
+	)
+
+
+func _tile_button(parent: Control, zone: int, index: int, tile: Tile, rect: Rect2) -> Button:
+	var node_name := "%sTile_%02d" % ["Draw" if zone == DuelBattleState.TileZone.DRAW else "Hand", index]
+	rect = _guide_rect(node_name, rect, "tile")
+	var button := Button.new()
+	button.name = node_name
+	button.text = ""
+	button.tooltip_text = ""
+	button.position = rect.position
+	button.size = rect.size
+	button.focus_mode = Control.FOCUS_NONE
+	button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_theme_font_size_override("font_size", 9 if zone == DuelBattleState.TileZone.DRAW else 7)
+	button.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.0))
+	var empty_box := _box(Color(1.0, 1.0, 1.0, 0.0), Color(1.0, 1.0, 1.0, 0.0), 0, 0)
+	button.add_theme_stylebox_override("normal", empty_box)
+	button.add_theme_stylebox_override("hover", empty_box)
+	button.add_theme_stylebox_override("pressed", empty_box)
+	button.add_theme_stylebox_override("focus", empty_box)
+	button.add_theme_stylebox_override("disabled", empty_box)
+	button.pivot_offset = rect.size / 2.0
+	parent.add_child(button)
+	return button
+
+
+func _on_tile_hovered(zone: int, index: int, is_hovered: bool) -> void:
+	var key := _selection_key(zone, index)
+	if is_hovered:
+		hovered[key] = true
+	else:
+		hovered.erase(key)
+	if zone == DuelBattleState.TileZone.HAND and hand_3d_showcase != null:
+		hand_3d_showcase.call("set_tile_hovered", zone, index, is_hovered)
+	elif zone == DuelBattleState.TileZone.DRAW and draw_3d_showcase != null:
+		draw_3d_showcase.call("set_tile_hovered", zone, index, is_hovered)
+
+
+func _on_tile_pressed(zone: int, index: int) -> void:
+	if state.is_complete or _is_resolving_turn or _is_auto_merging_draw:
+		return
+	var key := _selection_key(zone, index)
+	if selected.has(key):
+		selected.erase(key)
+	else:
+		selected[key] = {"zone": zone, "index": index}
+	hovered.erase(key)
+	_rebuild_after_change()
+
+
+func _on_play_tiles_pressed() -> void:
+	if _is_resolving_turn or _is_auto_merging_draw:
+		return
+	var selections := selected.values()
+	var preview := state.preview_play(selections)
+	if not bool(preview.get("valid", false)):
+		_set_status(_reason_to_text(str(preview.get("reason", "invalid_selection"))))
+		return
+	_is_resolving_turn = true
+	_update_hud()
+	var result := state.play_tiles(selections)
+	selected.clear()
+	_is_resolving_turn = false
+	if not bool(result.get("valid", false)):
+		_build_ui()
+		_set_status(_reason_to_text(str(result.get("reason", "invalid_selection"))))
+		return
+	_build_ui()
+	_set_status(str(result.get("event", "Tiles played")))
+
+
+func _on_ultimate_pressed() -> void:
+	if _is_resolving_turn or _is_auto_merging_draw:
+		return
+	var result := state.ultimate_win()
+	if not bool(result.get("valid", false)):
+		_set_status(_reason_to_text(str(result.get("reason", "not_ready"))))
+		return
+	selected.clear()
+	_build_ui()
+	_set_status(str(result.get("event", "Ultimate Win")))
+
+
+func _on_finish_pressed() -> void:
+	var scene := preload("res://src/scenes/game_over/game_over.tscn").instantiate()
+	scene.setup(state.result == DuelBattleState.BattleResult.WIN, state.turn_number)
+	get_tree().root.add_child(scene)
+	get_tree().current_scene = scene
+	queue_free()
+
+
+func _on_sort_suit_pressed() -> void:
+	if _is_resolving_turn or _is_auto_merging_draw:
+		return
+	state.hand.sort_in_place()
+	selected.clear()
+	_rebuild_after_change()
+	_set_status("Hand sorted by suit")
+
+
+func _on_sort_rank_pressed() -> void:
+	if _is_resolving_turn or _is_auto_merging_draw:
+		return
+	state.hand.tiles.sort_custom(func(a: Tile, b: Tile) -> bool:
+		if a.rank != b.rank:
+			return a.rank < b.rank
+		return a.suit < b.suit
+	)
+	selected.clear()
+	_rebuild_after_change()
+	_set_status("Hand sorted by rank")
+
+
+func _on_rules_pressed() -> void:
+	get_tree().change_scene_to_file("res://src/scenes/rules/rules.tscn")
+
+
+func _on_hits_pressed() -> void:
+	_show_hits_panel()
+
+
+func _show_hits_panel() -> void:
+	var root := get_node_or_null("BattleRoot") as Control
+	if root == null:
+		root = self
+	var existing := root.get_node_or_null("HitsStatsPanel")
+	if existing != null:
+		existing.queue_free()
 		return
 
-	var score := Scorer.score(_last_preview)
-	var english_name := _pattern_name(_last_preview)
-	var final_score := int(score.get("final_score", 0))
-	preview_pattern_row.set_value(english_name)
-	preview_base_row.set_value(str(int(score.get("base_score", 0))))
-	preview_mult_row.set_value("x%s" % _format_mult(float(score.get("pattern_mult", 0.0))))
-	preview_score_row.set_value(str(final_score))
-	play_button.disabled = false
-	score_burst_label.text = english_name
-	multiplier_burst_label.text = "x%s MULTIPLIER" % _format_mult(float(score.get("pattern_mult", 0.0)))
-	hand_value_label.text = "HAND VALUE %d" % final_score
-	preview_score_row.flash()
+	hits_panel = Panel.new()
+	hits_panel.name = "HitsStatsPanel"
+	hits_panel.position = Vector2(346, 82)
+	hits_panel.size = Vector2(220, 174)
+	hits_panel.add_theme_stylebox_override("panel", _box(Color(0.045, 0.055, 0.052, 0.97), Color(0.9, 0.58, 0.18), 1, 4))
+	root.add_child(hits_panel)
+	hits_panel.move_to_front()
 
+	_label(hits_panel, "HitsStatsTitle", "HITS", Rect2(10, 8, 160, 16), 12, Color(1.0, 0.86, 0.22))
+	_button(hits_panel, "HitsCloseButton", "X", Rect2(190, 8, 20, 18), _close_hits_panel)
 
-func _on_play_pressed() -> void:
-	if _last_preview.is_empty() or selected_cards.is_empty():
+	var totals := _hits_totals()
+	_label(hits_panel, "HitsAttackTotal", "ATK %d" % int(totals.get("damage", 0)), Rect2(12, 30, 62, 14), 8, Color(1.0, 0.42, 0.32))
+	_label(hits_panel, "HitsDefenseTotal", "DEF %d" % int(totals.get("defense", 0)), Rect2(78, 30, 62, 14), 8, Color(0.64, 0.92, 1.0))
+	_label(hits_panel, "HitsMoneyTotal", "$ %d" % int(totals.get("money", 0)), Rect2(144, 30, 62, 14), 8, Color(1.0, 0.86, 0.22))
+
+	var rows := _hits_rows()
+	if rows.is_empty():
+		_label(hits_panel, "HitsEmptyLabel", "No played hits yet", Rect2(12, 58, 190, 18), 8, Color(0.70, 0.74, 0.70), HORIZONTAL_ALIGNMENT_CENTER)
 		return
-	var tiles := _selected_tiles()
-	var result := battle.play_turn(tiles)
-	if not result.get("valid", false):
-		_show_popup("CAN'T PLAY", Color(1.0, 0.2, 0.2))
+	var row_count: int = min(rows.size(), 7)
+	for i in range(row_count):
+		var row: Dictionary = rows[rows.size() - row_count + i]
+		var y := 54 + i * 16
+		var text := "%s  %s" % [str(row.get("kind", "")), str(row.get("tiles", ""))]
+		_label(hits_panel, "HitsRow_%02d" % i, text, Rect2(12, y, 124, 14), 6, Color.WHITE)
+		_label(hits_panel, "HitsRowValues_%02d" % i, "A%d D%d $%d" % [
+			int(row.get("damage", 0)),
+			int(row.get("defense", 0)),
+			int(row.get("money", 0)),
+		], Rect2(138, y, 70, 14), 6, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_RIGHT)
+
+
+func _close_hits_panel() -> void:
+	if hits_panel != null and is_instance_valid(hits_panel):
+		hits_panel.queue_free()
+	hits_panel = null
+
+
+func _on_new_run_pressed() -> void:
+	seed += 1
+	_start_new_run()
+
+
+func _rebuild_after_change() -> void:
+	var current_status := status_value.text if status_value != null else ""
+	_build_ui()
+	_set_status(current_status)
+
+
+func _start_auto_draw_merge() -> void:
+	_is_auto_merging_draw = true
+	_draw_merge_elapsed = 0.0
+	_draw_merge_generation += 1
+	if DisplayServer.get_name() == "headless":
+		_finish_auto_draw_merge(_draw_merge_generation)
+		return
+	_animate_draw_into_hand(_draw_merge_generation)
+
+
+func _finish_auto_draw_merge(generation: int) -> void:
+	if generation != _draw_merge_generation:
+		return
+	state.accept_drawn_into_hand()
+	_is_auto_merging_draw = false
+	_build_ui()
+	_set_status("Draw merged into hand. Select 3 tiles to play.")
+
+
+func _animate_draw_into_hand(generation: int) -> void:
+	if draw_3d_showcase == null or hand_3d_showcase == null:
+		return
+	var drawn_tiles := state.drawn.duplicate()
+	var merge_ghosts := []
+	if draw_3d_showcase != null:
+		draw_3d_showcase.modulate.a = 1.0
+	await get_tree().create_timer(DRAW_INTRO_HOLD).timeout
+	if generation != _draw_merge_generation or not _is_auto_merging_draw:
+		_clear_merge_ghosts(merge_ghosts)
+		return
+	if not is_instance_valid(draw_3d_showcase) or not is_instance_valid(hand_3d_showcase):
+		_clear_merge_ghosts(merge_ghosts)
+		return
+	var merge_parent := get_node_or_null("BattleRoot") as Control
+	if merge_parent == null:
+		merge_parent = self
+	if not is_instance_valid(merge_parent):
+		return
+	merge_ghosts = _build_merge_ghosts(merge_parent, drawn_tiles)
+	draw_3d_showcase.modulate.a = 0.0
+	if is_instance_valid(draw_layer):
+		draw_layer.modulate.a = 0.0
+	var target_positions := _draw_merge_target_positions(drawn_tiles)
+	_draw_merge_tween = create_tween()
+	_draw_merge_tween.set_parallel(true)
+	_draw_merge_tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	for i in range(merge_ghosts.size()):
+		var ghost_node = merge_ghosts[i]
+		if not is_instance_valid(ghost_node):
+			continue
+		var ghost := ghost_node as Control
+		var target: Vector2 = target_positions.get(i, HAND_LEFT_RECT.position)
+		var mid := Vector2(
+			lerp(ghost.position.x, target.x, 0.48),
+			min(ghost.position.y, target.y) - 54.0 - float(i) * 12.0
+		)
+		_draw_merge_tween.tween_property(ghost, "position", mid, DRAW_INSERT_DURATION * 0.45).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		_draw_merge_tween.tween_property(ghost, "position", target, DRAW_INSERT_DURATION * 0.55).set_delay(DRAW_INSERT_DURATION * 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN_OUT)
+		_draw_merge_tween.tween_property(ghost, "scale", MERGE_GHOST_TARGET_SCALE, DRAW_INSERT_DURATION)
+	await get_tree().create_timer(DRAW_INSERT_DURATION + 0.04).timeout
+	if generation != _draw_merge_generation or not _is_auto_merging_draw:
+		_clear_merge_ghosts(merge_ghosts)
 		return
 
-	var pattern_text := _pattern_name(_last_preview)
-	var gained := int(result.get("final_score", 0))
-	_play_resolution_animation(pattern_text, gained)
-	selected_cards.clear()
-	_refresh_hand()
-	_update_play_area_echo()
-	_update_preview()
+	_draw_fade_tween = create_tween()
+	_draw_fade_tween.set_parallel(true)
+	if is_instance_valid(draw_3d_showcase):
+		_draw_fade_tween.tween_property(draw_3d_showcase, "modulate:a", 0.0, DRAW_FADE_DURATION)
+	if is_instance_valid(draw_layer):
+		_draw_fade_tween.tween_property(draw_layer, "modulate:a", 0.0, DRAW_FADE_DURATION)
+	for ghost_node in merge_ghosts:
+		if is_instance_valid(ghost_node):
+			_draw_fade_tween.tween_property(ghost_node, "modulate:a", 0.0, DRAW_FADE_DURATION)
+	await get_tree().create_timer(DRAW_FADE_DURATION + 0.04).timeout
+	_clear_merge_ghosts(merge_ghosts)
 
 
-func _play_resolution_animation(pattern_text: String, gained: int) -> void:
-	score_burst_label.text = "EPIC CHAIN!\n+" + _format_int(gained)
-	score_burst_label.scale = Vector2(0.5, 0.5)
-	multiplier_burst_label.text = pattern_text
-	var tween := create_tween()
-	tween.set_parallel(true)
-	tween.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(score_burst_label, "scale", Vector2(1.32, 1.32), 0.16)
-	tween.tween_property(score_burst_label, "modulate", Color(1.0, 0.32, 0.12), 0.08)
-	tween.chain().tween_property(score_burst_label, "modulate", Color.WHITE, 0.24)
-	_show_popup("+" + _format_int(gained), Color(1.0, 0.83, 0.2))
-	_shake_screen()
-	score_badge.pulse()
+func _clear_merge_ghosts(merge_ghosts: Array) -> void:
+	for ghost in merge_ghosts:
+		if is_instance_valid(ghost):
+			ghost.queue_free()
 
 
-func _show_popup(message: String, color: Color) -> void:
-	var popup: ScorePopup = ScorePopupScript.new()
-	popup.name = "FloatingScorePopup"
-	fx_layer.add_child(popup)
-	popup.popup(message, Vector2(300, 170), color)
+func _build_merge_ghosts(parent: Control, drawn_tiles: Array) -> Array:
+	var ghosts := []
+	for i in range(drawn_tiles.size()):
+		var ghost: Control = MahjongTileShowcase3DScript.new()
+		ghost.name = "DrawMergeGhost_%02d" % i
+		ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ghost.position = Vector2(DRAW_TILE_START + i * DRAW_TILE_SPACING - 16, 292)
+		ghost.size = MERGE_GHOST_SIZE
+		ghost.scale = MERGE_GHOST_SCALE
+		ghost.modulate = Color(1.0, 1.0, 1.0, 0.96)
+		parent.add_child(ghost)
+		ghost.call("setup_tiles", [drawn_tiles[i]], {}, {}, DuelBattleState.TileZone.DRAW)
+		ghosts.append(ghost)
+	return ghosts
 
 
-func _shake_screen() -> void:
-	var tween := create_tween()
-	tween.tween_property(screen_shake_layer, "position", Vector2(5, -4), 0.035)
-	tween.tween_property(screen_shake_layer, "position", Vector2(-5, 3), 0.035)
-	tween.tween_property(screen_shake_layer, "position", Vector2(3, 4), 0.035)
-	tween.tween_property(screen_shake_layer, "position", Vector2.ZERO, 0.05)
+func _draw_merge_target_positions(drawn_tiles: Array) -> Dictionary:
+	var entries := []
+	for tile in state.hand.tiles:
+		entries.append({"tile": tile, "draw_index": -1})
+	for i in range(drawn_tiles.size()):
+		entries.append({"tile": drawn_tiles[i], "draw_index": i})
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var tile_a: Tile = a["tile"]
+		var tile_b: Tile = b["tile"]
+		var compare := tile_a.compare_to(tile_b)
+		if compare != 0:
+			return compare < 0
+		return int(a["draw_index"]) < int(b["draw_index"])
+	)
+
+	var targets := {}
+	for sorted_index in range(entries.size()):
+		var draw_index := int(entries[sorted_index]["draw_index"])
+		if draw_index >= 0:
+			targets[draw_index] = Vector2(HAND_TILE_CENTER_START + sorted_index * HAND_TILE_SPACING - 16, 292)
+	return targets
 
 
-func _selected_tiles() -> Array:
-	var tiles := []
-	for card in selected_cards:
-		tiles.append(card.tile)
-	return tiles
+func _hits_rows() -> Array[Dictionary]:
+	var rows: Array[Dictionary] = []
+	for play in state.played_sets:
+		var play_id := str(play.get("id", ""))
+		if play_id != "sequence" and play_id != "triplet" and play_id != "scattered":
+			continue
+		var stats := _effect_stats(play.get("effects", []) as Array)
+		var tile_names := play.get("tiles", []) as Array
+		rows.append({
+			"kind": "ARCHIVE" if play_id == "sequence" or play_id == "triplet" else "SCATTER",
+			"tiles": " ".join(tile_names),
+			"damage": int(stats.get("damage", 0)),
+			"defense": int(stats.get("defense", 0)),
+			"money": int(stats.get("money", 0)),
+		})
+	return rows
+
+
+func _hits_totals() -> Dictionary:
+	var totals := {"damage": 0, "defense": 0, "money": 0}
+	for row in _hits_rows():
+		totals["damage"] = int(totals.get("damage", 0)) + int(row.get("damage", 0))
+		totals["defense"] = int(totals.get("defense", 0)) + int(row.get("defense", 0))
+		totals["money"] = int(totals.get("money", 0)) + int(row.get("money", 0))
+	return totals
+
+
+func _effect_stats(effects: Array) -> Dictionary:
+	var stats := {"damage": 0, "defense": 0, "money": 0}
+	for effect in effects:
+		var effect_type := str(effect.get("type", "none"))
+		if not stats.has(effect_type):
+			continue
+		stats[effect_type] = int(stats.get(effect_type, 0)) + int(effect.get("value", 0))
+	return stats
 
 
 func _update_hud() -> void:
-	round_badge.set_value("%d / %d" % [min(battle.current_turn, BattleState.MAX_TURNS), BattleState.MAX_TURNS])
-	score_badge.set_value(_format_int(battle.total_score))
-	target_badge.set_value(_format_int(battle.target_score))
-	discards_left_label.text = str(max(BattleState.MAX_TURNS - battle.current_turn + 1, 0))
+	round_value.text = "Turn %d" % state.turn_number
+	player_hp_value.text = "%d" % state.player_hp
+	defense_value.text = "%d" % state.player_defense
+	money_value.text = "$%d" % state.money
+	enemy_hp_value.text = "%d" % state.enemy_hp
+	enemy_attack_countdown_value.text = "%d turns" % state.enemy_attack_countdown
+
+	var mirror := find_child("EnemyHpMirrorValue", true, false) as Label
+	if mirror != null:
+		mirror.text = "HP %d / ATK %d" % [state.enemy_hp, state.enemy_attack]
+
+	mode_value.text = "Select exactly 3 tiles. Triplet > Sequence > Pair+Single > Scattered. Selected: %d" % selected.size()
+	play_tiles_button.disabled = _is_auto_merging_draw or _is_resolving_turn or state.is_complete or selected.size() != DuelBattleState.PLAY_PER_TURN
+	ultimate_button.disabled = _is_auto_merging_draw or _is_resolving_turn or state.is_complete or not state.can_ultimate_win()
+
+	if state.result == DuelBattleState.BattleResult.WIN:
+		pattern_burst_label.text = "VICTORY"
+		pattern_burst_label.add_theme_color_override("font_color", Color.YELLOW)
+	elif state.result == DuelBattleState.BattleResult.LOSE:
+		pattern_burst_label.text = "DEFEAT"
+		pattern_burst_label.add_theme_color_override("font_color", Color(1.0, 0.32, 0.24))
+	elif state.can_ultimate_win():
+		pattern_burst_label.text = "ULTIMATE READY"
+		pattern_burst_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.22))
+	else:
+		pattern_burst_label.text = "BUILD MELDS"
+		pattern_burst_label.add_theme_color_override("font_color", Color(0.62, 0.65, 0.62))
 
 
-func _pattern_name(pattern: Dictionary) -> String:
-	return ENGLISH_PATTERNS.get(pattern.get("id", ""), "UNKNOWN")
+func _set_status(text: String) -> void:
+	if status_value != null:
+		status_value.text = text
 
 
-func _format_mult(value: float) -> String:
-	if is_equal_approx(value, roundf(value)):
-		return str(int(value))
-	return "%.1f" % value
+func _selection_key(zone: int, index: int) -> String:
+	return "%d:%d" % [zone, index]
 
 
-func _format_int(value: int) -> String:
-	var text := str(value)
-	var out := ""
-	var count := 0
-	for i in range(text.length() - 1, -1, -1):
-		if count > 0 and count % 3 == 0:
-			out = "," + out
-		out = text[i] + out
-		count += 1
-	return out
+func _reason_to_text(reason: String) -> String:
+	match reason:
+		"battle_complete":
+			return "Battle is already complete"
+		"play_exactly_three":
+			return "Select exactly 3 tiles to play"
+		"not_a_meld":
+			return "Selected tiles are not a sequence, triplet, or kan"
+		"not_ready":
+			return "Ultimate Win needs open/concealed melds plus a pair"
+		"invalid_selection":
+			return "Selection is no longer valid"
+	return reason
 
 
-func _panel_box(fill: Color, border: Color, border_width: int) -> StyleBoxFlat:
+func _concealed_hint_count() -> int:
+	var breakdown := state.get_win_breakdown()
+	if breakdown.is_empty():
+		return 0
+	return int((breakdown.get("concealed_melds", []) as Array).size())
+
+
+func _pair_hint_count() -> int:
+	var counts := {}
+	for tile in state.hand.tiles:
+		counts[tile.key()] = int(counts.get(tile.key(), 0)) + 1
+	var pairs := 0
+	for count in counts.values():
+		if int(count) >= 2:
+			pairs += 1
+	return pairs
+
+
+func _metric(parent: Control, node_name: String, label_text: String, value_text: String, rect: Rect2) -> void:
+	rect = _guide_rect(node_name, rect, "panel")
+	_panel(parent, node_name, rect, Color(0.10, 0.13, 0.12))
+	_label(parent, "%sLabel" % node_name, label_text, Rect2(rect.position.x, rect.position.y + 3, rect.size.x, 10), 7, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+	if not value_text.is_empty():
+		_label(parent, "%sValueText" % node_name, value_text, Rect2(rect.position.x, rect.position.y + 15, rect.size.x, 12), 8, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
+
+
+func _slot(parent: Control, node_name: String, rect: Rect2, stage_text: String) -> void:
+	rect = _guide_rect(node_name, rect, "slot")
+	_panel(parent, node_name, rect, Color(0.18, 0.20, 0.18, 0.72))
+	_label(parent, "%sStage" % node_name, stage_text, rect, 5, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+
+
+func _button(parent: Control, node_name: String, text: String, rect: Rect2, callback: Callable) -> Button:
+	rect = _guide_rect(node_name, rect, "button")
+	var button := Button.new()
+	button.name = node_name
+	button.text = text
+	button.position = rect.position
+	button.size = rect.size
+	button.focus_mode = Control.FOCUS_NONE
+	button.add_theme_font_size_override("font_size", 8)
+	button.add_theme_stylebox_override("normal", _box(Color(0.45, 0.09, 0.05), Color(0.8, 0.42, 0.12), 1, 4))
+	button.add_theme_stylebox_override("hover", _box(Color(0.66, 0.13, 0.07), Color(1.0, 0.72, 0.18), 1, 4))
+	button.add_theme_stylebox_override("disabled", _box(Color(0.22, 0.16, 0.15), Color(0.28, 0.26, 0.24), 1, 4))
+	button.pressed.connect(callback)
+	parent.add_child(button)
+	return button
+
+
+func _panel(parent: Control, node_name: String, rect: Rect2, color: Color) -> Panel:
+	rect = _guide_rect(node_name, rect, "panel")
+	var panel := Panel.new()
+	panel.name = node_name
+	panel.position = rect.position
+	panel.size = rect.size
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_theme_stylebox_override("panel", _box(color, Color(0.20, 0.12, 0.06), 1, 4))
+	parent.add_child(panel)
+	return panel
+
+
+func _label(parent: Control, node_name: String, text: String, rect: Rect2, font_size: int, color: Color, alignment := HORIZONTAL_ALIGNMENT_LEFT) -> Label:
+	rect = _guide_rect(node_name, rect, "label")
+	var label := Label.new()
+	label.name = node_name
+	label.text = text
+	label.position = rect.position
+	label.size = rect.size
+	label.horizontal_alignment = alignment
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", color)
+	parent.add_child(label)
+	return label
+
+
+func _box(fill: Color, border: Color, border_width: int, radius: int) -> StyleBoxFlat:
 	var box := StyleBoxFlat.new()
 	box.bg_color = fill
 	box.border_color = border
 	box.set_border_width_all(border_width)
-	box.corner_radius_top_left = 5
-	box.corner_radius_top_right = 5
-	box.corner_radius_bottom_left = 5
-	box.corner_radius_bottom_right = 5
-	box.shadow_color = Color(0.0, 0.0, 0.0, 0.58)
-	box.shadow_size = 6
-	box.content_margin_left = 8
-	box.content_margin_right = 8
-	box.content_margin_top = 6
-	box.content_margin_bottom = 6
+	box.corner_radius_top_left = radius
+	box.corner_radius_top_right = radius
+	box.corner_radius_bottom_left = radius
+	box.corner_radius_bottom_right = radius
+	box.shadow_color = Color(0.0, 0.0, 0.0, 0.45)
+	box.shadow_size = 3
 	return box
+
+
+func _guide_rect(node_name: String, fallback: Rect2, guide_type := "panel") -> Rect2:
+	if layout_guides == null:
+		return fallback
+	var guide := layout_guides.get_node_or_null("Guide_%s" % node_name) as Control
+	if guide == null:
+		guide = _create_editor_guide(node_name, fallback, guide_type)
+		if guide == null:
+			return fallback
+	return Rect2(guide.position, guide.size)
+
+
+func _create_editor_guide(node_name: String, rect: Rect2, guide_type: String) -> Control:
+	if not Engine.is_editor_hint() or layout_guides == null:
+		return null
+	var guide := ColorRect.new()
+	guide.name = "Guide_%s" % node_name
+	guide.position = rect.position
+	guide.size = rect.size
+	guide.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	match guide_type:
+		"label":
+			guide.color = Color(1.0, 1.0, 1.0, 0.10)
+		"button":
+			guide.color = Color(1.0, 0.20, 0.10, 0.22)
+		"tile":
+			guide.color = Color(0.0, 1.0, 1.0, 0.20)
+		"slot":
+			guide.color = Color(0.8, 0.8, 0.8, 0.16)
+		_:
+			guide.color = Color(0.20, 0.70, 1.0, 0.14)
+	layout_guides.add_child(guide)
+	var scene_root := get_tree().edited_scene_root if get_tree() != null else null
+	if scene_root != null:
+		guide.owner = scene_root
+	return guide
+
+
+func _guide_signature() -> String:
+	if layout_guides == null:
+		return ""
+	var parts: Array[String] = []
+	for child in layout_guides.get_children():
+		var control := child as Control
+		if control == null:
+			continue
+		parts.append("%s:%.2f,%.2f,%.2f,%.2f" % [
+			control.name,
+			control.position.x,
+			control.position.y,
+			control.size.x,
+			control.size.y,
+		])
+	parts.sort()
+	return "|".join(parts)

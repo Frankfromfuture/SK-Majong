@@ -1,0 +1,14 @@
+{
+  "screen": "Boss",
+  "version": "v001",
+  "stage": "6.0",
+  "status": "reserved",
+  "prototypeResolution": { "width": 1920, "height": 1080 },
+  "assets": [
+    { "name": "UI_Boss_Background_v001.png", "status": "pending", "node": "BossBackground" },
+    { "name": "UI_Boss_Banner_v001.png", "status": "pending", "node": "BossBanner" },
+    { "name": "UI_Boss_RulePanel_v001.png", "status": "pending", "node": "RulePanel" },
+    { "name": "UI_Boss_ThreatFrame_v001.png", "status": "pending", "node": "ThreatFrame" },
+    { "name": "UI_Boss_ButtonBegin_v001.png", "status": "pending", "node": "BeginButton" }
+  ]
+}
