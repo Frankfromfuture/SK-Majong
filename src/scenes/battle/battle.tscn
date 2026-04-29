@@ -191,7 +191,7 @@ offset_bottom = 284.0
 mouse_filter = 2
 color = Color(1, 0.2, 0.1, 0.22)
 
-[node name="Guide_MoneyPanelLabel" type="ColorRect" parent="BattleLayout" unique_id=113841702]
+[node name="Guide_WallPanelLabel" type="ColorRect" parent="BattleLayout" unique_id=113841702]
 layout_mode = 0
 offset_left = 16.0
 offset_top = 18.0
@@ -200,7 +200,7 @@ offset_bottom = 36.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.1)
 
-[node name="Guide_MoneyValue" type="ColorRect" parent="BattleLayout" unique_id=926195375]
+[node name="Guide_WallCountValue" type="ColorRect" parent="BattleLayout" unique_id=926195375]
 layout_mode = 0
 offset_left = 34.0
 offset_top = 18.0
@@ -209,7 +209,7 @@ offset_bottom = 36.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.1)
 
-[node name="Guide_PlayerHpPanel" type="ColorRect" parent="BattleLayout" unique_id=2037870264]
+[node name="Guide_PlayerGeneralHpPanel" type="ColorRect" parent="BattleLayout" unique_id=2037870264]
 layout_mode = 0
 offset_left = 18.0
 offset_top = 42.0
@@ -218,7 +218,7 @@ offset_bottom = 66.0
 mouse_filter = 2
 color = Color(0.2, 0.7, 1, 0.14)
 
-[node name="Guide_PlayerHpPanelLabel" type="ColorRect" parent="BattleLayout" unique_id=1562732197]
+[node name="Guide_PlayerGeneralHpPanelLabel" type="ColorRect" parent="BattleLayout" unique_id=1562732197]
 layout_mode = 0
 offset_left = 18.0
 offset_top = 45.0
@@ -227,7 +227,7 @@ offset_bottom = 55.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.1)
 
-[node name="Guide_PlayerHpValue" type="ColorRect" parent="BattleLayout" unique_id=848906462]
+[node name="Guide_PlayerGeneralHpValue" type="ColorRect" parent="BattleLayout" unique_id=848906462]
 layout_mode = 0
 offset_left = 72.0
 offset_top = 48.0
@@ -362,7 +362,7 @@ offset_bottom = 206.0
 mouse_filter = 2
 color = Color(0.8, 0.8, 0.8, 0.16)
 
-[node name="Guide_FlowerSeasonBuffBar" type="ColorRect" parent="BattleLayout" unique_id=103704325]
+[node name="Guide_HonorReserveBar" type="ColorRect" parent="BattleLayout" unique_id=103704325]
 layout_mode = 0
 offset_left = 500.0
 offset_top = 134.0
@@ -371,7 +371,7 @@ offset_bottom = 192.0
 mouse_filter = 2
 color = Color(0.2, 0.7, 1, 0.14)
 
-[node name="Guide_FlowerSeasonBuffTitle" type="ColorRect" parent="BattleLayout" unique_id=285883396]
+[node name="Guide_HonorReserveTitle" type="ColorRect" parent="BattleLayout" unique_id=285883396]
 layout_mode = 0
 offset_left = 506.0
 offset_top = 138.0
@@ -398,7 +398,7 @@ offset_bottom = 168.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.1)
 
-[node name="Guide_BuffIcon_Flower_Plum" type="ColorRect" parent="BattleLayout" unique_id=1429573004]
+[node name="Guide_BuffIcon_Reserved_00" type="ColorRect" parent="BattleLayout" unique_id=1429573004]
 layout_mode = 0
 offset_left = 508.0
 offset_top = 145.0
@@ -425,7 +425,7 @@ offset_bottom = 168.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.1)
 
-[node name="Guide_BuffIcon_Flower_Orchid" type="ColorRect" parent="BattleLayout" unique_id=10736212]
+[node name="Guide_BuffIcon_Reserved_01" type="ColorRect" parent="BattleLayout" unique_id=10736212]
 layout_mode = 0
 offset_left = 535.0
 offset_top = 145.0
@@ -452,7 +452,7 @@ offset_bottom = 168.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.1)
 
-[node name="Guide_BuffIcon_Flower_Bamboo" type="ColorRect" parent="BattleLayout" unique_id=1578546000]
+[node name="Guide_BuffIcon_Reserved_02" type="ColorRect" parent="BattleLayout" unique_id=1578546000]
 layout_mode = 0
 offset_left = 562.0
 offset_top = 145.0
@@ -479,7 +479,7 @@ offset_bottom = 168.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.1)
 
-[node name="Guide_BuffIcon_Flower_Chrysanthemum" type="ColorRect" parent="BattleLayout" unique_id=877921658]
+[node name="Guide_BuffIcon_Reserved_03" type="ColorRect" parent="BattleLayout" unique_id=877921658]
 layout_mode = 0
 offset_left = 589.0
 offset_top = 145.0
@@ -506,7 +506,7 @@ offset_bottom = 185.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.1)
 
-[node name="Guide_BuffIcon_Season_Spring" type="ColorRect" parent="BattleLayout" unique_id=236984177]
+[node name="Guide_BuffIcon_Reserved_04" type="ColorRect" parent="BattleLayout" unique_id=236984177]
 layout_mode = 0
 offset_left = 508.0
 offset_top = 162.0
@@ -533,7 +533,7 @@ offset_bottom = 185.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.1)
 
-[node name="Guide_BuffIcon_Season_Summer" type="ColorRect" parent="BattleLayout" unique_id=999960508]
+[node name="Guide_BuffIcon_Reserved_05" type="ColorRect" parent="BattleLayout" unique_id=999960508]
 layout_mode = 0
 offset_left = 535.0
 offset_top = 162.0
@@ -560,7 +560,7 @@ offset_bottom = 185.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.1)
 
-[node name="Guide_BuffIcon_Season_Autumn" type="ColorRect" parent="BattleLayout" unique_id=454698652]
+[node name="Guide_BuffIcon_Reserved_06" type="ColorRect" parent="BattleLayout" unique_id=454698652]
 layout_mode = 0
 offset_left = 562.0
 offset_top = 162.0
@@ -587,7 +587,7 @@ offset_bottom = 185.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.1)
 
-[node name="Guide_BuffIcon_Season_Winter" type="ColorRect" parent="BattleLayout" unique_id=1587137696]
+[node name="Guide_BuffIcon_Reserved_07" type="ColorRect" parent="BattleLayout" unique_id=1587137696]
 layout_mode = 0
 offset_left = 589.0
 offset_top = 162.0
@@ -929,7 +929,7 @@ offset_bottom = 58.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.1)
 
-[node name="Guide_EnemyHpPanel" type="ColorRect" parent="BattleLayout" unique_id=2035206865]
+[node name="Guide_EnemyCityDefensePanel" type="ColorRect" parent="BattleLayout" unique_id=2035206865]
 layout_mode = 0
 offset_left = 502.0
 offset_top = 62.0
@@ -938,7 +938,7 @@ offset_bottom = 86.0
 mouse_filter = 2
 color = Color(0.2, 0.7, 1, 0.14)
 
-[node name="Guide_EnemyHpPanelLabel" type="ColorRect" parent="BattleLayout" unique_id=990695358]
+[node name="Guide_EnemyCityDefensePanelLabel" type="ColorRect" parent="BattleLayout" unique_id=990695358]
 layout_mode = 0
 offset_left = 502.0
 offset_top = 65.0
@@ -947,7 +947,7 @@ offset_bottom = 75.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.1)
 
-[node name="Guide_EnemyHpValue" type="ColorRect" parent="BattleLayout" unique_id=1740427587]
+[node name="Guide_EnemyCityDefenseValue" type="ColorRect" parent="BattleLayout" unique_id=1740427587]
 layout_mode = 0
 offset_left = 574.0
 offset_top = 68.0
@@ -1001,7 +1001,7 @@ offset_bottom = 138.0
 mouse_filter = 2
 color = Color(1, 1, 1, 0.1)
 
-[node name="Guide_EnemyHpMirrorValue" type="ColorRect" parent="BattleLayout" unique_id=2030684345]
+[node name="Guide_EnemyDefenseMirrorValue" type="ColorRect" parent="BattleLayout" unique_id=2030684345]
 layout_mode = 0
 offset_left = 500.0
 offset_top = 138.0

@@ -1,0 +1,49 @@
+Create a green screen pixel art modular black horse parts sheet for a 2.5D Three Kingdoms fantasy roguelike battle game.
+
+Subject:
+A black war horse for an armored Cao Cao inspired warlord. Side-view, facing right. Strong, elegant, battle-ready, with subtle armor and saddle.
+
+Style:
+- Crisp pixel art.
+- Slightly high resolution pixel art for later scaling.
+- 2.5D side-view battle perspective.
+- Pure green screen background #00FF00.
+- No text.
+- No shadow.
+- No rider.
+- No extra characters.
+- No perspective distortion.
+
+Generate separated modular horse parts on one asset sheet, with large spacing between parts, each part isolated and not overlapping.
+
+Required horse parts:
+1. horse_head
+2. horse_neck
+3. horse_body
+4. horse_chest_armor
+5. horse_saddle
+6. horse_reins
+7. horse_tail
+8. front_left_upper_leg
+9. front_left_lower_leg
+10. front_left_hoof
+11. front_right_upper_leg
+12. front_right_lower_leg
+13. front_right_hoof
+14. back_left_upper_leg
+15. back_left_lower_leg
+16. back_left_hoof
+17. back_right_upper_leg
+18. back_right_lower_leg
+19. back_right_hoof
+20. horse_cloth_armor
+21. horse_mane
+
+Requirements:
+- Each part must be complete and separate.
+- Use consistent scale.
+- Use clean hard pixel edges.
+- Joints must be usable for rotation.
+- Horse must be mostly black with dark blue highlights, bronze armor accents, and red saddle cloth.
+- Leave enough empty green margin around each part.
+- Output as a single asset sheet.

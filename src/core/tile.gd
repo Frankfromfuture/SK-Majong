@@ -11,8 +11,8 @@ enum Suit {
 
 const SUIT_NAMES := {
 	Suit.MAN: "万",
-	Suit.PIN: "筒",
-	Suit.SOU: "索",
+	Suit.PIN: "饼",
+	Suit.SOU: "条",
 	Suit.WIND: "风",
 	Suit.DRAGON: "箭",
 }

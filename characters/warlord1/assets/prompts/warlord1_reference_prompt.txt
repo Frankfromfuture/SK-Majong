@@ -1,0 +1,18 @@
+Create a clean full assembled reference image for a 2.5D Three Kingdoms fantasy roguelike battle game.
+
+Character:
+Cao Cao inspired armored cavalry warlord, golden crown, helmet, face hidden, black horse, long spear, battle-ready pose, facing right.
+
+Style:
+- Crisp pixel art.
+- Slightly high resolution pixel art for later scaling.
+- 2.5D side-view battle perspective.
+- Pure green screen background #00FF00.
+- No text.
+- No UI.
+- No shadow.
+- No extra characters.
+- Face must be hidden.
+- Strong silhouette for battle screen.
+
+This reference image is only for visual matching. The actual animation should use modular separated parts.

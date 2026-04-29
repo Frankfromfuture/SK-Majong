@@ -1,26 +1,23 @@
 extends Control
 
 const PATTERN_ROWS := [
-	{"name": "Standard Win", "stage": "1.0", "level": 1, "base": 0, "mult": "x2", "enabled": true},
-	{"name": "All Sequences", "stage": "2.0", "level": 1, "base": 20, "mult": "x1", "enabled": false},
-	{"name": "All Triplets", "stage": "2.0", "level": 1, "base": 35, "mult": "x2", "enabled": false},
-	{"name": "Mixed Suit", "stage": "2.0", "level": 1, "base": 25, "mult": "x1", "enabled": false},
-	{"name": "Pure Suit", "stage": "2.0", "level": 1, "base": 45, "mult": "x3", "enabled": false},
-	{"name": "Seven Pairs", "stage": "2.0", "level": 1, "base": 40, "mult": "x2", "enabled": false},
-	{"name": "Thirteen Orphans", "stage": "2.0", "level": 1, "base": 88, "mult": "x5", "enabled": false},
-	{"name": "Dragon Set", "stage": "2.0", "level": 1, "base": 30, "mult": "x2", "enabled": false},
-	{"name": "Wind Set", "stage": "2.0", "level": 1, "base": 30, "mult": "x2", "enabled": false},
-	{"name": "Flower Bloom", "stage": "3.0", "level": 1, "base": 20, "mult": "x2", "enabled": false},
-	{"name": "Season Cycle", "stage": "3.0", "level": 1, "base": 20, "mult": "x2", "enabled": false},
-	{"name": "Warlord Formation", "stage": "4.0", "level": 1, "base": 50, "mult": "x4", "enabled": false},
+	{"name": "136 tiles", "stage": "1.0", "detail": "No flowers", "enabled": true},
+	{"name": "Draw rhythm", "stage": "1.0", "detail": "Last play + 1, max 4", "enabled": true},
+	{"name": "Hand cap", "stage": "1.0", "detail": "Discard to 14", "enabled": true},
+	{"name": "Single / Scatter", "stage": "1.0", "detail": "Best suited tile only", "enabled": true},
+	{"name": "Pair", "stage": "1.0", "detail": "x2.5, no battlefield", "enabled": true},
+	{"name": "Sequence", "stage": "1.0", "detail": "x4, battlefield", "enabled": true},
+	{"name": "Triplet", "stage": "1.0", "detail": "x5, battlefield", "enabled": true},
+	{"name": "Kan", "stage": "1.0", "detail": "x8, battlefield", "enabled": true},
+	{"name": "Standard Hu", "stage": "1.0", "detail": "4 melds + pair", "enabled": true},
+	{"name": "Total Assault", "stage": "1.0", "detail": "Hu x2, battle continues", "enabled": true},
+	{"name": "Honor powers", "stage": "2.0", "detail": "Reserved", "enabled": false},
+	{"name": "Special wins", "stage": "2.0", "detail": "Reserved", "enabled": false},
 ]
 
 
 func _ready() -> void:
-	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
-	var back_button := find_child("RulesBackButton", true, false) as Button
-	if back_button != null:
-		back_button.pressed.connect(_on_back_pressed)
+	_build_ui()
 
 
 func _build_ui() -> void:
@@ -28,25 +25,23 @@ func _build_ui() -> void:
 		child.queue_free()
 
 	_panel(self, "RulesBackground", Rect2(0, 0, 640, 360), Color(0.035, 0.023, 0.026))
-	_label(self, "RulesHeader", "PATTERNS", Rect2(0, 16, 640, 28), 18, Color.YELLOW, HORIZONTAL_ALIGNMENT_CENTER)
+	_label(self, "RulesHeader", "BATTLE RULES V1.0", Rect2(0, 16, 640, 28), 18, Color.YELLOW, HORIZONTAL_ALIGNMENT_CENTER)
 	_button(self, "RulesBackButton", "BACK", Rect2(582, 8, 46, 20), _on_back_pressed)
 
 	var px := 214
 	var pw := 212
 	_panel(self, "PatternListPanel", Rect2(px, 44, pw, 310), Color(0.06, 0.09, 0.07, 0.97))
-	_label(self, "PatternListTitle", "PATTERNS", Rect2(px + 10, 50, pw - 20, 16), 13, Color.YELLOW)
-	_label(self, "PatternListSubtitle", "Name                 Lv Base Mult", Rect2(px + 10, 70, pw - 16, 12), 6, Color(0.5, 0.55, 0.5))
+	_label(self, "PatternListTitle", "RULE MODULES", Rect2(px + 10, 50, pw - 20, 16), 13, Color.YELLOW)
+	_label(self, "PatternListSubtitle", "Name              Detail", Rect2(px + 10, 70, pw - 16, 12), 6, Color(0.5, 0.55, 0.5))
 	for i in range(PATTERN_ROWS.size()):
 		var row: Dictionary = PATTERN_ROWS[i]
 		var y := 86 + i * 22
 		var color := Color.WHITE if row["enabled"] else Color(0.62, 0.65, 0.62)
 		var row_bg := Color(0.16, 0.18, 0.15) if row["enabled"] else Color(0.12, 0.14, 0.12, 0.72)
 		_panel(self, "PatternRow_%02d" % i, Rect2(px + 4, y, pw - 8, 18), row_bg)
-		_label(self, "PatternRowName_%02d" % i, row["name"], Rect2(px + 10, y, 84, 18), 8, color)
-		_label(self, "PatternRowLevel_%02d" % i, "Lv.%s" % row["level"], Rect2(px + 98, y, 26, 18), 7, color, HORIZONTAL_ALIGNMENT_CENTER)
-		_label(self, "PatternRowBase_%02d" % i, str(row["base"]), Rect2(px + 128, y, 22, 18), 7, color, HORIZONTAL_ALIGNMENT_RIGHT)
-		_label(self, "PatternRowMultiplier_%02d" % i, row["mult"], Rect2(px + 154, y, 22, 18), 8, Color(1.0, 0.42, 0.32) if row["enabled"] else color, HORIZONTAL_ALIGNMENT_RIGHT)
-		_label(self, "PatternRowProgress_%02d" % i, "ON" if row["enabled"] else row["stage"], Rect2(px + 180, y, 26, 18), 6, color, HORIZONTAL_ALIGNMENT_RIGHT)
+		_label(self, "PatternRowName_%02d" % i, row["name"], Rect2(px + 10, y, 82, 18), 7, color)
+		_label(self, "PatternRowDetail_%02d" % i, row["detail"], Rect2(px + 96, y, 76, 18), 6, color)
+		_label(self, "PatternRowProgress_%02d" % i, "ON" if row["enabled"] else row["stage"], Rect2(px + 176, y, 30, 18), 6, color, HORIZONTAL_ALIGNMENT_RIGHT)
 
 
 func _on_back_pressed() -> void:

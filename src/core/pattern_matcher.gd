@@ -2,18 +2,11 @@ class_name PatternMatcher
 extends RefCounted
 
 const PATTERNS := [
-	{"id": "yakuman", "name": "役满", "level": 12, "base_score": 500, "mult": 10.0, "tile_count": 7},
-	{"id": "chinitsu_group", "name": "清一色组", "level": 11, "base_score": 200, "mult": 6.0, "tile_count": 5},
-	{"id": "iitsu", "name": "一气通贯", "level": 10, "base_score": 150, "mult": 5.0, "tile_count": 9},
-	{"id": "kan", "name": "杠", "level": 9, "base_score": 100, "mult": 4.0, "tile_count": 4},
-	{"id": "iipeikou", "name": "一杯口", "level": 8, "base_score": 80, "mult": 3.0, "tile_count": 6},
-	{"id": "sanshoku_set", "name": "三色搭", "level": 7, "base_score": 50, "mult": 3.0, "tile_count": 3},
-	{"id": "two_pairs", "name": "两对", "level": 6, "base_score": 40, "mult": 2.0, "tile_count": 4},
-	{"id": "sequence", "name": "顺子", "level": 5, "base_score": 30, "mult": 2.0, "tile_count": 3},
-	{"id": "triplet", "name": "刻子", "level": 4, "base_score": 30, "mult": 2.0, "tile_count": 3},
-	{"id": "taatsu", "name": "搭子", "level": 3, "base_score": 15, "mult": 1.0, "tile_count": 2},
-	{"id": "pair", "name": "对儿", "level": 2, "base_score": 10, "mult": 1.0, "tile_count": 2},
-	{"id": "single", "name": "单骑", "level": 1, "base_score": 5, "mult": 1.0, "tile_count": 1},
+	{"id": "kan", "name": "杠", "stage": "1.0", "tile_count": 4, "mult": 8.0},
+	{"id": "triplet", "name": "刻子", "stage": "1.0", "tile_count": 3, "mult": 5.0},
+	{"id": "sequence", "name": "顺子", "stage": "1.0", "tile_count": 3, "mult": 4.0},
+	{"id": "pair", "name": "对子", "stage": "1.0", "tile_count": 2, "mult": 2.5},
+	{"id": "single", "name": "单张", "stage": "1.0", "tile_count": 1, "mult": 1.0},
 ]
 
 

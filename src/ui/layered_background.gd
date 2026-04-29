@@ -62,7 +62,7 @@ func _build() -> void:
 	add_child(symbol_layer)
 
 	if show_symbols:
-		var symbols := ["万", "筒", "索", "東", "南", "白", "中"]
+		var symbols := ["万", "饼", "条", "東", "南", "白", "中"]
 		for i in range(symbols.size()):
 			var label := Label.new()
 			label.name = "FloatingSymbol_%02d" % i

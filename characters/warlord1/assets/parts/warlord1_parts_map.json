@@ -1,0 +1,100 @@
+{
+  "rider": {
+    "helmet_front": "warlord1_parts_sheet_001.png",
+    "golden_crown": "warlord1_parts_sheet_002.png",
+    "helmet_back": "warlord1_parts_sheet_003.png",
+    "hidden_face_shadow": "warlord1_parts_sheet_004.png",
+    "torso_armor": "",
+    "waist_armor": "warlord1_parts_sheet_006.png",
+    "cape_back": "warlord1_parts_sheet_007.png",
+    "left_shoulder_guard": "warlord1_parts_sheet_008.png",
+    "left_upper_arm": "warlord1_parts_sheet_009.png",
+    "left_lower_arm": "warlord1_parts_sheet_010.png",
+    "left_hand": "warlord1_parts_sheet_011.png",
+    "right_shoulder_guard": "warlord1_parts_sheet_012.png",
+    "right_upper_arm": "warlord1_parts_sheet_013.png",
+    "right_lower_arm": "warlord1_parts_sheet_014.png",
+    "right_hand": "warlord1_parts_sheet_015.png",
+    "left_upper_leg": "warlord1_parts_sheet_016.png",
+    "left_lower_leg": "warlord1_parts_sheet_017.png",
+    "left_boot": "warlord1_parts_sheet_018.png",
+    "right_upper_leg": "warlord1_parts_sheet_020.png",
+    "right_lower_leg": "warlord1_parts_sheet_021.png",
+    "right_boot": "",
+    "saddle_connection_cloth": "warlord1_parts_sheet_023.png",
+    "back_banner_small": "warlord1_parts_sheet_024.png",
+    "armor_skirt_left": "warlord1_parts_sheet_025.png",
+    "armor_skirt_right": "warlord1_parts_sheet_026.png"
+  },
+  "horse": {
+    "horse_head": "warlord1_horse_parts_sheet_001.png",
+    "horse_neck": "warlord1_horse_parts_sheet_002.png",
+    "horse_body": "",
+    "horse_chest_armor": "",
+    "horse_saddle": "warlord1_horse_parts_sheet_005.png",
+    "horse_reins": "warlord1_horse_parts_sheet_006.png",
+    "horse_tail": "warlord1_horse_parts_sheet_007.png",
+    "front_left_upper_leg": "warlord1_horse_parts_sheet_008.png",
+    "front_left_lower_leg": "",
+    "front_left_hoof": "warlord1_horse_parts_sheet_010.png",
+    "front_right_upper_leg": "warlord1_horse_parts_sheet_011.png",
+    "front_right_lower_leg": "warlord1_horse_parts_sheet_012.png",
+    "front_right_hoof": "warlord1_horse_parts_sheet_013.png",
+    "back_left_upper_leg": "warlord1_horse_parts_sheet_014.png",
+    "back_left_lower_leg": "warlord1_horse_parts_sheet_015.png",
+    "back_left_hoof": "warlord1_horse_parts_sheet_016.png",
+    "back_right_upper_leg": "warlord1_horse_parts_sheet_017.png",
+    "back_right_lower_leg": "warlord1_horse_parts_sheet_018.png",
+    "back_right_hoof": "warlord1_horse_parts_sheet_019.png",
+    "horse_cloth_armor": "warlord1_horse_parts_sheet_020.png",
+    "horse_mane": "warlord1_horse_parts_sheet_021.png"
+  },
+  "weapon": {
+    "long_spear_full": "",
+    "long_spear_tip": "warlord1_weapon_sheet_002.png",
+    "long_spear_shaft": "warlord1_weapon_sheet_003.png",
+    "long_spear_back_end": "warlord1_weapon_sheet_004.png",
+    "spear_motion_blur_1": "warlord1_weapon_sheet_005.png",
+    "spear_motion_blur_2": "warlord1_weapon_sheet_006.png",
+    "spear_motion_blur_3": "warlord1_weapon_sheet_007.png",
+    "spear_charge_glow": "",
+    "spear_thrust_line": "warlord1_weapon_sheet_018.png",
+    "spear_slash_arc": ""
+  },
+  "effects": {
+    "spear_thrust_flash": [
+      "warlord1_effects_sheet_003.png",
+      "warlord1_effects_sheet_005.png",
+      "warlord1_effects_sheet_008.png"
+    ],
+    "spear_slash_arc": [
+      "warlord1_effects_sheet_009.png",
+      "warlord1_effects_sheet_014.png",
+      "warlord1_effects_sheet_029.png"
+    ],
+    "impact_spark": [
+      "warlord1_effects_sheet_030.png",
+      "warlord1_effects_sheet_033.png",
+      "warlord1_effects_sheet_036.png"
+    ],
+    "horse_charge_dust": [
+      "warlord1_effects_sheet_049.png",
+      "warlord1_effects_sheet_089.png",
+      "warlord1_effects_sheet_094.png"
+    ],
+    "ground_crack": [
+      "warlord1_effects_sheet_096.png",
+      "warlord1_effects_sheet_097.png"
+    ],
+    "red_command_aura": [
+      "warlord1_effects_sheet_103.png",
+      "warlord1_effects_sheet_141.png",
+      "warlord1_effects_sheet_142.png"
+    ],
+    "black_wind_trail": [
+      "warlord1_effects_sheet_143.png",
+      "warlord1_effects_sheet_160.png",
+      "warlord1_effects_sheet_163.png"
+    ]
+  }
+}

@@ -1,7 +1,0 @@
-[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://9d59b0e63f73472d87e5"]
-
-[ext_resource type="Texture2D" uid="uid://75f65debfc4f42d09cdc" path="res://assets/sprites/battle/Textures/TileFace_Wind_South.png" id="1_tex"]
-
-[resource]
-albedo_texture = ExtResource("1_tex")
-roughness = 0.2

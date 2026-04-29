@@ -1,0 +1,184 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://characters/warlord1/dev/warlord1_dev_scene.gd" id="1"]
+[ext_resource type="PackedScene" path="res://characters/warlord1/scenes/Warlord1.tscn" id="2"]
+
+[node name="Warlord1DevScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.14, 0.16, 0.2, 1)
+
+[node name="WarlordPreviewRoot" type="Node2D" parent="."]
+position = Vector2(350, 210)
+
+[node name="Warlord1" parent="WarlordPreviewRoot" instance=ExtResource("2")]
+
+[node name="Camera2D" type="Camera2D" parent="WarlordPreviewRoot"]
+enabled = false
+zoom = Vector2(0.85, 0.85)
+
+[node name="ControlPanel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 214.0
+offset_bottom = 350.0
+
+[node name="PanelMargin" type="MarginContainer" parent="ControlPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelVBox" type="VBoxContainer" parent="ControlPanel/PanelMargin"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="CurrentAnimationLabel" type="Label" parent="ControlPanel/PanelMargin/PanelVBox"]
+layout_mode = 2
+text = "Anim: idle"
+
+[node name="FacingLabel" type="Label" parent="ControlPanel/PanelMargin/PanelVBox"]
+layout_mode = 2
+text = "Facing: right"
+
+[node name="BusyLabel" type="Label" parent="ControlPanel/PanelMargin/PanelVBox"]
+layout_mode = 2
+text = "Busy: false"
+
+[node name="ScaleLabel" type="Label" parent="ControlPanel/PanelMargin/PanelVBox"]
+layout_mode = 2
+text = "Scale"
+
+[node name="ScaleSlider" type="HSlider" parent="ControlPanel/PanelMargin/PanelVBox"]
+layout_mode = 2
+min_value = 0.5
+max_value = 6.0
+step = 0.1
+value = 2.0
+
+[node name="SpeedLabel" type="Label" parent="ControlPanel/PanelMargin/PanelVBox"]
+layout_mode = 2
+text = "Speed"
+
+[node name="SpeedSlider" type="HSlider" parent="ControlPanel/PanelMargin/PanelVBox"]
+layout_mode = 2
+min_value = 0.3
+max_value = 2.5
+step = 0.05
+value = 1.0
+
+[node name="ButtonsGrid" type="GridContainer" parent="ControlPanel/PanelMargin/PanelVBox"]
+layout_mode = 2
+columns = 2
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+
+[node name="IdleButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Idle"
+
+[node name="ReadyButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Ready"
+
+[node name="HorseIdleButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Horse Idle"
+
+[node name="WalkButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Walk"
+
+[node name="ChargeButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Charge"
+
+[node name="AttackThrustButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Attack Thrust"
+
+[node name="AttackSlashButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Attack Slash"
+
+[node name="SkillAuraButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Skill Aura"
+
+[node name="HitLightButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Hit Light"
+
+[node name="HitHeavyButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Hit Heavy"
+
+[node name="BlockButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Block"
+
+[node name="VictoryButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Victory"
+
+[node name="DeathButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Death"
+
+[node name="ResetPoseButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Reset Pose"
+
+[node name="FlipFacingButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Flip Facing"
+
+[node name="BackToBattleButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Back To Battle"
+
+[node name="OpenMapperButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Open Mapper"
+
+[node name="LoadPartsButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Load Parts"
+
+[node name="UsePlaceholdersButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Preview PNG"
+
+[node name="ReferenceButton" type="Button" parent="ControlPanel/PanelMargin/PanelVBox/ButtonsGrid"]
+layout_mode = 2
+text = "Real PNG"
+
+[node name="HitLogLabel" type="Label" parent="ControlPanel/PanelMargin/PanelVBox"]
+layout_mode = 2
+text = "Hit Log:"
+
+[node name="HitLog" type="RichTextLabel" parent="ControlPanel/PanelMargin/PanelVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 80)
+bbcode_enabled = true
+scroll_active = true

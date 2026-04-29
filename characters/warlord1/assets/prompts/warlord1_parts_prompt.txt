@@ -1,0 +1,56 @@
+Create a green screen pixel art modular character parts sheet for a 2.5D Three Kingdoms fantasy roguelike battle game.
+
+Character: Cao Cao inspired warlord, golden crown, armored commander, riding a black horse, holding a long spear. Face must be hidden by helmet shadow or face guard, no visible facial features. Powerful but compact battle sprite style.
+
+Style:
+- Crisp pixel art.
+- Slightly high resolution pixel art for later scaling.
+- 2.5D side-view battle perspective.
+- Facing right.
+- Three Kingdoms fantasy roguelike style.
+- Clean readable silhouette.
+- No background except pure green screen #00FF00.
+- No text.
+- No shadow.
+- No perspective distortion.
+- No extra characters.
+
+Generate separated modular body parts on one asset sheet, with large spacing between parts, each part isolated and not overlapping.
+
+Required human rider parts:
+1. helmet_front
+2. golden_crown
+3. helmet_back
+4. hidden_face_shadow
+5. torso_armor
+6. waist_armor
+7. cape_back
+8. left_shoulder_guard
+9. left_upper_arm
+10. left_lower_arm
+11. left_hand
+12. right_shoulder_guard
+13. right_upper_arm
+14. right_lower_arm
+15. right_hand
+16. left_upper_leg
+17. left_lower_leg
+18. left_boot
+19. right_upper_leg
+20. right_lower_leg
+21. right_boot
+22. saddle_connection_cloth
+23. back_banner_small
+24. armor_skirt_left
+25. armor_skirt_right
+
+Requirements:
+- Each part must be complete and separate.
+- Use consistent scale.
+- Use clean hard pixel edges.
+- Keep joints visually usable for rotation.
+- Leave enough empty green margin around each part.
+- Face must remain hidden.
+- The character must look like Cao Cao inspired, but not use modern realistic portrait details.
+- Color palette: black, dark steel, antique gold, muted red, ivory highlights.
+- Output as a single asset sheet.

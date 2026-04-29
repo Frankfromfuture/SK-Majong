@@ -1,7 +1,7 @@
 class_name Hand
 extends RefCounted
 
-const MAX_SIZE := 13
+const MAX_SIZE := 14
 
 var tiles: Array[Tile] = []
 var max_size := MAX_SIZE

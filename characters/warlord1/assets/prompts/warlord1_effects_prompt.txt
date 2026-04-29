@@ -1,0 +1,43 @@
+Create a green screen pixel art battle effects asset sheet for a 2.5D Three Kingdoms fantasy roguelike battle game.
+
+Effects for a mounted spear warlord:
+1. spear_thrust_flash_frame_1
+2. spear_thrust_flash_frame_2
+3. spear_thrust_flash_frame_3
+4. spear_slash_arc_frame_1
+5. spear_slash_arc_frame_2
+6. spear_slash_arc_frame_3
+7. impact_spark_frame_1
+8. impact_spark_frame_2
+9. impact_spark_frame_3
+10. horse_charge_dust_frame_1
+11. horse_charge_dust_frame_2
+12. horse_charge_dust_frame_3
+13. ground_crack_frame_1
+14. ground_crack_frame_2
+15. red_command_aura_frame_1
+16. red_command_aura_frame_2
+17. red_command_aura_frame_3
+18. black_wind_trail_frame_1
+19. black_wind_trail_frame_2
+20. black_wind_trail_frame_3
+
+Style:
+- Crisp pixel art.
+- Slightly high resolution pixel art for later scaling.
+- Pure green screen background #00FF00.
+- No text.
+- No character.
+- No extra background.
+- Each effect isolated with generous green margins.
+- High contrast.
+- Suitable for Godot Sprite2D animation.
+
+Color palette:
+- Spear flashes: white, gold, pale yellow.
+- Impact sparks: orange, red, white.
+- Horse dust: tan, brown.
+- Command aura: dark red, black, gold.
+- Wind trail: dark blue, black, gray.
+
+Output as a single asset sheet.

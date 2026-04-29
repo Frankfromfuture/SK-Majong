@@ -8,7 +8,6 @@ var _time := 0.0
 
 
 func _ready() -> void:
-	get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	_wire_existing_ui()
 
 

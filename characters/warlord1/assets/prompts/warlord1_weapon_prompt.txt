@@ -1,0 +1,34 @@
+Create a green screen pixel art weapon asset sheet for a 2.5D Three Kingdoms fantasy roguelike battle game.
+
+Subject:
+Long spear weapon for a Cao Cao inspired armored cavalry warlord.
+
+Style:
+- Crisp pixel art.
+- Slightly high resolution pixel art for later scaling.
+- Side-view, facing right.
+- Pure green screen background #00FF00.
+- No text.
+- No shadow.
+- No character.
+- No background.
+
+Generate separated weapon parts and variants:
+1. long_spear_full
+2. long_spear_tip
+3. long_spear_shaft
+4. long_spear_back_end
+5. spear_motion_blur_1
+6. spear_motion_blur_2
+7. spear_motion_blur_3
+8. spear_charge_glow
+9. spear_thrust_line
+10. spear_slash_arc
+
+Requirements:
+- Weapon should match Three Kingdoms fantasy style.
+- Dark metal spear tip.
+- Black shaft with bronze/gold details.
+- Red tassel near the spear head.
+- Each asset separated with green space.
+- Output as a single asset sheet.

@@ -1,6 +1,8 @@
 class_name MahjongWall
 extends RefCounted
 
+const TOTAL_TILE_COUNT := 136
+
 var tiles: Array[Tile] = []
 
 

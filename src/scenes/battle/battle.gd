@@ -21,9 +21,7 @@ const DRAW_INTRO_HOLD := 0.50
 const DRAW_INSERT_DURATION := 0.50
 const DRAW_FADE_DURATION := 0.18
 const HAND_RECENTER_DURATION := 0.32
-
-const FLOWER_BUFFS := ["Plum", "Orchid", "Bamboo", "Chrysanthemum"]
-const SEASON_BUFFS := ["Spring", "Summer", "Autumn", "Winter"]
+const WARLORD_DEV_SCENE := "res://characters/warlord1/dev/Warlord1DevScene.tscn"
 
 var state: DuelBattleState
 var selected := {}
@@ -31,16 +29,20 @@ var hovered := {}
 var seed := 136001
 
 var round_value: Label
-var player_hp_value: Label
+var player_general_hp_value: Label
 var defense_value: Label
-var money_value: Label
-var enemy_hp_value: Label
+var wall_count_value: Label
+var enemy_city_defense_value: Label
+var enemy_army_defense_value: Label
 var enemy_attack_countdown_value: Label
 var pattern_burst_label: Label
 var status_value: Label
 var mode_value: Label
-var play_tiles_button: Button
+var deploy_arrow_button: Button
+var continue_button: Button
+var discard_button: Button
 var ultimate_button: Button
+var played_pile_count_label: Label
 var hand_layer: Control
 var draw_layer: Control
 var hand_3d_showcase: SubViewportContainer
@@ -62,8 +64,6 @@ var _bg_sparkles: Array[ColorRect] = []
 
 
 func _ready() -> void:
-	if not Engine.is_editor_hint():
-		get_tree().root.content_scale_mode = Window.CONTENT_SCALE_MODE_CANVAS_ITEMS
 	_start_new_run()
 
 
@@ -98,7 +98,7 @@ func _start_new_run() -> void:
 	selected.clear()
 	hovered.clear()
 	_build_ui()
-	_set_status("Opening auto-kept 13 from 16. Play 1-3 tiles. Next draw equals played count.")
+	_set_status("")
 
 
 func _build_ui() -> void:
@@ -140,7 +140,7 @@ func _build_ui() -> void:
 	_panel(root, "EnemyPanel", _guide_rect("EnemyPanel", Rect2(492, 34, 138, 86)), Color(0, 0, 0, 0))
 	_panel(root, "RightSupportPanel", _guide_rect("RightSupportPanel", Rect2(492, 126, 138, 162)), Color(0, 0, 0, 0))
 	_panel(root, "BottomActionPanel", _guide_rect("BottomActionPanel", Rect2(136, 230, 348, 58)), Color(0, 0, 0, 0))
-	_panel(root, "HandTrayPanel", _guide_rect("HandTrayPanel", Rect2(8, 296, 560, 56)), Color(0, 0, 0, 0))
+	_panel(root, "HandTrayPanel", _guide_rect("HandTrayPanel", Rect2(74, 296, 494, 56)), Color(0, 0, 0, 0))
 
 	_build_battle_header(root)
 	_build_left_status(root)
@@ -149,6 +149,7 @@ func _build_ui() -> void:
 	_build_enemy_panel(root)
 	_build_played_meld_ledger(root)
 	_build_tile_rows(root)
+	_build_played_pile(root)
 	_build_tile_wall(root)
 	_build_buttons(root)
 	_build_bg_sparkles(root)
@@ -168,11 +169,11 @@ func _build_battle_header(parent: Control) -> void:
 
 
 func _build_left_status(parent: Control) -> void:
-	_label(parent, "MoneyPanelLabel", "$", Rect2(16, 18, 18, 18), 13, Color(1.0, 0.86, 0.20), HORIZONTAL_ALIGNMENT_CENTER)
-	money_value = _label(parent, "MoneyValue", "", Rect2(34, 18, 82, 18), 13, Color(1.0, 0.86, 0.20), HORIZONTAL_ALIGNMENT_LEFT)
-	_metric(parent, "PlayerHpPanel", "Player HP", "", Rect2(18, 42, 96, 24))
-	player_hp_value = _label(parent, "PlayerHpValue", "", Rect2(72, 48, 38, 12), 8, Color.WHITE, HORIZONTAL_ALIGNMENT_RIGHT)
-	_metric(parent, "DefensePanel", "DEF / Tempo", "", Rect2(18, 70, 96, 24))
+	_label(parent, "WallPanelLabel", "WALL", Rect2(16, 18, 36, 18), 8, Color(1.0, 0.86, 0.20), HORIZONTAL_ALIGNMENT_LEFT)
+	wall_count_value = _label(parent, "WallCountValue", "", Rect2(54, 18, 62, 18), 13, Color(1.0, 0.86, 0.20), HORIZONTAL_ALIGNMENT_LEFT)
+	_metric(parent, "PlayerGeneralHpPanel", "General HP", "", Rect2(18, 42, 96, 24))
+	player_general_hp_value = _label(parent, "PlayerGeneralHpValue", "", Rect2(72, 48, 38, 12), 8, Color.WHITE, HORIZONTAL_ALIGNMENT_RIGHT)
+	_metric(parent, "DefensePanel", "Army DEF", "", Rect2(18, 70, 96, 24))
 	defense_value = _label(parent, "DefenseValue", "", Rect2(72, 76, 38, 12), 8, Color(0.64, 0.92, 1.0), HORIZONTAL_ALIGNMENT_RIGHT)
 
 
@@ -197,32 +198,27 @@ func _build_future_bars(parent: Control) -> void:
 	_label(parent, "WeaponName_B", "ARMOR", Rect2(70, 196, 44, 7), 4, Color(0.60, 0.62, 0.58), HORIZONTAL_ALIGNMENT_CENTER)
 	_slot(parent, "WeaponMarkOverlay_B", Rect2(71, 176, 42, 30), "Mark")
 
-	_panel(parent, "FlowerSeasonBuffBar", Rect2(500, 134, 122, 58), Color(0, 0, 0, 0))
-	_label(parent, "FlowerSeasonBuffTitle", "SEASON / FLOWER", Rect2(506, 138, 110, 12), 8, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
-	for i in range(8):
+	_panel(parent, "HonorReserveBar", Rect2(500, 134, 122, 74), Color(0, 0, 0, 0))
+	_label(parent, "HonorReserveTitle", "HONORS 2.0", Rect2(506, 138, 110, 12), 8, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
+	var honors := ["东", "南", "西", "北", "中", "发", "白"]
+	for i in range(honors.size()):
 		var x := 508 + (i % 4) * 27
-		var y := 154 + int(i / 4) * 17
-		_slot(parent, "BuffSlot_%02d" % i, Rect2(x, y, 20, 14), "3.0")
-		_label(parent, "BuffValueLabel_%02d" % i, "-", Rect2(x, y, 20, 14), 7, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
-		if i < FLOWER_BUFFS.size():
-			_label(parent, "BuffIcon_Flower_%s" % FLOWER_BUFFS[i], "F", Rect2(x, y - 9, 20, 9), 5, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
-		else:
-			_label(parent, "BuffIcon_Season_%s" % SEASON_BUFFS[i - FLOWER_BUFFS.size()], "S", Rect2(x, y - 9, 20, 9), 5, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+		var y := 156 + int(i / 4) * 21
+		_slot(parent, "BuffSlot_%02d" % i, Rect2(x, y, 20, 16), "2.0")
+		_label(parent, "BuffValueLabel_%02d" % i, honors[i], Rect2(x, y, 20, 16), 8, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+		_label(parent, "BuffIcon_Reserved_%02d" % i, "OFF", Rect2(x - 1, y + 15, 22, 7), 4, Color(0.45, 0.48, 0.45), HORIZONTAL_ALIGNMENT_CENTER)
 
-	_panel(parent, "ConsumableBar", Rect2(500, 202, 122, 52), Color(0, 0, 0, 0))
-	_label(parent, "ConsumableBarTitle", "ITEMS", Rect2(506, 206, 110, 12), 8, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
-	for i in range(3):
-		var x := 512 + i * 34
-		_slot(parent, "ConsumableSlot_%02d" % i, Rect2(x, 222, 24, 22), "5.0")
-		_label(parent, "ConsumableCountLabel_%02d" % i, "0", Rect2(x + 12, 234, 12, 8), 5, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
+	_panel(parent, "ConsumableBar", Rect2(500, 220, 122, 34), Color(0, 0, 0, 0))
+	_label(parent, "ConsumableBarTitle", "V1.0", Rect2(506, 224, 110, 12), 8, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "ConsumableCountLabel_00", "万=DEF  条=Melee  饼=Ranged", Rect2(504, 238, 116, 10), 5, Color(0.70, 0.74, 0.70), HORIZONTAL_ALIGNMENT_CENTER)
 
 
 func _build_reveal_area(parent: Control) -> void:
 	_label(parent, "RevealAreaTitle", "BATTLE", Rect2(146, 82, 328, 16), 13, Color.CYAN, HORIZONTAL_ALIGNMENT_CENTER)
 	_panel(parent, "PlayerConditionPanel", Rect2(146, 100, 92, 16), Color(0, 0, 0, 0))
-	_label(parent, "PlayerConditionValue", "Condition", Rect2(150, 101, 84, 14), 7, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "PlayerConditionValue", "Army %d" % state.player_army_defense, Rect2(150, 101, 84, 14), 7, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
 	_panel(parent, "EnemyConditionPanel", Rect2(382, 100, 92, 16), Color(0, 0, 0, 0))
-	_label(parent, "EnemyConditionValue", "Condition", Rect2(386, 101, 84, 14), 7, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "EnemyConditionValue", "Army %d" % state.enemy_army_defense, Rect2(386, 101, 84, 14), 7, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
 	_panel(parent, "AllyUnit_00", Rect2(164, 146, 32, 28), Color(0, 0, 0, 0))
 	_label(parent, "AllyUnitLabel_00", "P1", Rect2(164, 147, 32, 18), 10, Color(0.68, 1.0, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
 	_panel(parent, "AllyUnit_01", Rect2(218, 126, 32, 28), Color(0, 0, 0, 0))
@@ -232,36 +228,36 @@ func _build_reveal_area(parent: Control) -> void:
 	_panel(parent, "EnemyWarlordUnit", Rect2(404, 134, 42, 34), Color(0, 0, 0, 0))
 	_label(parent, "EnemyUnitSprite", "EN", Rect2(404, 136, 42, 22), 11, Color(1.0, 0.48, 0.36), HORIZONTAL_ALIGNMENT_CENTER)
 	_panel(parent, "EnemyIntentBox", Rect2(370, 174, 104, 34), Color(0, 0, 0, 0))
-	_label(parent, "EnemyIntentBoxValue", "ATK %d\nDEF 30" % state.enemy_attack, Rect2(376, 176, 92, 28), 9, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "EnemyIntentBoxValue", "ATK %d\nCD %d" % [state.enemy_attack, state.enemy_attack_countdown], Rect2(376, 176, 92, 28), 9, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
 	pattern_burst_label = _label(parent, "PatternBurstLabel", "", Rect2(166, 114, 288, 28), 21, Color(0.62, 0.65, 0.62), HORIZONTAL_ALIGNMENT_CENTER)
 	_panel(parent, "ConcealedMeldHintPanel", Rect2(146, 208, 78, 14), Color(0, 0, 0, 0))
 	_label(parent, "ConcealedMeldHintValue", "Dark %d" % _concealed_hint_count(), Rect2(150, 208, 70, 12), 6, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
 	_panel(parent, "PairCandidateHintPanel", Rect2(230, 208, 66, 14), Color(0, 0, 0, 0))
 	_label(parent, "PairCandidateHintValue", "Pairs %d" % _pair_hint_count(), Rect2(234, 208, 58, 12), 6, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
 	_panel(parent, "ShantenBadge", Rect2(302, 208, 56, 14), Color(0, 0, 0, 0))
-	_label(parent, "ShantenValue", "Ready" if state.can_ultimate_win() else "Build", Rect2(306, 208, 48, 12), 6, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "ShantenValue", "Hu" if state.can_ultimate_win() else "Build", Rect2(306, 208, 48, 12), 6, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
 	_panel(parent, "WinMultiplierBadge", Rect2(364, 208, 62, 14), Color(0, 0, 0, 0))
 	_label(parent, "WinMultiplierValue", "x%.2f" % state.current_win_multiplier(), Rect2(368, 208, 54, 12), 6, Color(1.0, 0.42, 0.32), HORIZONTAL_ALIGNMENT_CENTER)
 	mode_value = _label(parent, "ModeValue", "", Rect2(146, 232, 328, 12), 8, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
 	status_value = _label(parent, "StatusValue", "", Rect2(146, 244, 328, 10), 8, Color(0.78, 1.0, 0.76), HORIZONTAL_ALIGNMENT_CENTER)
-	_label(parent, "DrawLabel", "MELD / DRAW 1-3", Rect2(146, 254, 100, 12), 8, Color.CYAN)
 	_label(parent, "HandLabel", "HAND", Rect2(16, 286, 80, 10), 8, Color.CYAN)
 
 
 func _build_enemy_panel(parent: Control) -> void:
 	_label(parent, "EnemyNameLabel", "ENEMY WARLORD", Rect2(500, 42, 122, 16), 10, Color(1.0, 0.72, 0.18), HORIZONTAL_ALIGNMENT_CENTER)
-	_metric(parent, "EnemyHpPanel", "Enemy HP", "", Rect2(502, 62, 118, 24))
-	enemy_hp_value = _label(parent, "EnemyHpValue", "", Rect2(574, 68, 42, 12), 8, Color(1.0, 0.42, 0.32), HORIZONTAL_ALIGNMENT_RIGHT)
+	_metric(parent, "EnemyCityDefensePanel", "City DEF", "", Rect2(502, 62, 118, 24))
+	enemy_city_defense_value = _label(parent, "EnemyCityDefenseValue", "", Rect2(574, 68, 42, 12), 8, Color(1.0, 0.42, 0.32), HORIZONTAL_ALIGNMENT_RIGHT)
 	_metric(parent, "EnemyAttackCountdownPanel", "Intent", "", Rect2(502, 88, 118, 24))
 	enemy_attack_countdown_value = _label(parent, "EnemyAttackCountdownValue", "", Rect2(574, 94, 42, 12), 8, Color.WHITE, HORIZONTAL_ALIGNMENT_RIGHT)
-	_label(parent, "EnemyIntentLabel", "3-turn action cycle", Rect2(500, 116, 122, 10), 6, Color(0.80, 0.82, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "EnemyIntentLabel", "Army DEF", Rect2(500, 116, 58, 10), 6, Color(0.80, 0.82, 0.78), HORIZONTAL_ALIGNMENT_CENTER)
+	enemy_army_defense_value = _label(parent, "EnemyArmyDefenseValue", "", Rect2(558, 116, 58, 10), 7, Color(0.64, 0.92, 1.0), HORIZONTAL_ALIGNMENT_RIGHT)
 	_label(parent, "EnemyAttackValue", "ATK %d" % state.enemy_attack, Rect2(500, 126, 122, 12), 8, Color(1.0, 0.42, 0.32), HORIZONTAL_ALIGNMENT_CENTER)
-	_label(parent, "EnemyHpMirrorValue", "", Rect2(500, 138, 122, 10), 6, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "EnemyDefenseMirrorValue", "", Rect2(500, 138, 122, 10), 6, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
 
 
 func _build_played_meld_ledger(parent: Control) -> void:
 	_panel(parent, "OpenMeldLedgerPanel", Rect2(210, 252, 116, 32), Color(0, 0, 0, 0))
-	_label(parent, "OpenMeldLedgerTitle", "OPEN MELDS", Rect2(216, 254, 104, 10), 7, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
+	_label(parent, "OpenMeldLedgerTitle", "BATTLE MOVES", Rect2(216, 254, 104, 10), 7, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
 	played_meld_layer = Control.new()
 	played_meld_layer.name = "OpenMeldLedgerList"
 	parent.add_child(played_meld_layer)
@@ -269,7 +265,7 @@ func _build_played_meld_ledger(parent: Control) -> void:
 	var rows: int = min(2, state.open_melds.size())
 	for i in range(rows):
 		var meld: Dictionary = state.open_melds[state.open_melds.size() - rows + i]
-		var effect := "%s %+d" % [str(meld.get("effect_type", "none")).capitalize(), int(meld.get("effect_value", 0))]
+		var effect := _effect_label(meld)
 		_label(played_meld_layer, "OpenMeldRow_%02d" % i, "%s  %s" % [meld.get("name", "Meld"), effect], Rect2(216, 264 + i * 9, 104, 8), 5, Color.WHITE)
 
 
@@ -327,6 +323,33 @@ func _build_tile_wall(parent: Control) -> void:
 	_label(parent, "TileWallCount", "%d" % state.remaining_deck(), Rect2(578, 338, 50, 10), 6, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
 
 
+func _build_played_pile(parent: Control) -> void:
+	var pile_rect := _guide_rect("PlayedPilePanel", Rect2(8, 296, 58, 56))
+	_panel(parent, "PlayedPilePanel", pile_rect, Color(0, 0, 0, 0))
+	_label(parent, "PlayedPileLabel", "PILE", Rect2(12, 299, 50, 10), 7, Color(1.0, 0.86, 0.22), HORIZONTAL_ALIGNMENT_CENTER)
+	for i in range(10):
+		var col := i % 5
+		var row := int(i / 5)
+		_panel(parent, "PlayedPileTile_%02d" % i, Rect2(14 + col * 9, 314 + row * 13, 8, 12), Color(0.78, 0.70, 0.52))
+	played_pile_count_label = _label(parent, "PlayedPileCount", "0", Rect2(12, 338, 50, 10), 6, Color.WHITE, HORIZONTAL_ALIGNMENT_CENTER)
+	played_pile_count_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var pile_click := Button.new()
+	pile_click.name = "PlayedPileButton"
+	pile_click.position = pile_rect.position
+	pile_click.size = pile_rect.size
+	pile_click.focus_mode = Control.FOCUS_NONE
+	pile_click.text = ""
+	pile_click.tooltip_text = "Played pile"
+	var empty_box := _box(Color(1, 1, 1, 0), Color(1, 1, 1, 0), 0, 0)
+	pile_click.add_theme_stylebox_override("normal", empty_box)
+	pile_click.add_theme_stylebox_override("hover", empty_box)
+	pile_click.add_theme_stylebox_override("pressed", empty_box)
+	pile_click.add_theme_stylebox_override("focus", empty_box)
+	pile_click.pressed.connect(_on_hits_pressed)
+	parent.add_child(pile_click)
+
+
 func _should_show_draw_tiles() -> bool:
 	return state != null and state.drawn.size() > 0 and not _is_resolving_turn
 
@@ -341,10 +364,15 @@ func _hand_showcase_rect() -> Rect2:
 
 
 func _build_buttons(parent: Control) -> void:
-	play_tiles_button = _button(parent, "PlayTilesButton", "PLAY", _guide_rect("PlayTilesButton", Rect2(146, 260, 54, 20)), _on_play_tiles_pressed)
+	continue_button = _button(parent, "ContinueButton", "PASS", Rect2(146, 260, 58, 20), _on_continue_pressed)
+	discard_button = _button(parent, "DiscardButton", "DISCARD", Rect2(206, 260, 58, 20), _on_discard_pressed)
+	deploy_arrow_button = _button(parent, "DeployArrowButton", "PLAY ↑", Rect2(268, 280, 84, 20), _on_play_tiles_pressed)
+	deploy_arrow_button.visible = false
+	discard_button.visible = false
 	_button(parent, "SortBySuitButton", "SORT SUIT", _guide_rect("SortBySuitButton", Rect2(394, 260, 64, 20)), _on_sort_suit_pressed)
-	ultimate_button = _button(parent, "UltimateWinButton", "ULTIMATE", _guide_rect("UltimateWinButton", Rect2(462, 260, 70, 20)), _on_ultimate_pressed)
+	ultimate_button = _button(parent, "UltimateWinButton", "ASSAULT", _guide_rect("UltimateWinButton", Rect2(462, 260, 70, 20)), _on_ultimate_pressed)
 	_button(parent, "HitsButton", "HITS", _guide_rect("HitsButton", Rect2(536, 260, 42, 20)), _on_hits_pressed)
+	_button(parent, "WarlordDevButton", "Warlord Dev", Rect2(490, 8, 88, 20), _on_warlord_dev_pressed)
 	_button(parent, "MainMenuButton", "MENU", _guide_rect("MainMenuButton", Rect2(582, 8, 46, 20)), func() -> void:
 		get_tree().change_scene_to_file("res://src/scenes/main_menu/main.tscn")
 	)
@@ -387,7 +415,7 @@ func _on_tile_hovered(zone: int, index: int, is_hovered: bool) -> void:
 
 
 func _on_tile_pressed(zone: int, index: int) -> void:
-	if state.is_complete or _is_resolving_turn or _is_auto_merging_draw:
+	if state.is_complete or state.pending_hu_choice or _is_resolving_turn or _is_auto_merging_draw:
 		return
 	var key := _selection_key(zone, index)
 	if selected.has(key):
@@ -417,6 +445,34 @@ func _on_play_tiles_pressed() -> void:
 		return
 	_build_ui()
 	_set_status(str(result.get("event", "Tiles played")))
+
+
+func _on_continue_pressed() -> void:
+	if _is_resolving_turn or _is_auto_merging_draw:
+		return
+	_is_resolving_turn = true
+	var result := state.decline_ultimate_win() if state.pending_hu_choice else state.play_tiles([])
+	selected.clear()
+	_is_resolving_turn = false
+	if not bool(result.get("valid", false)):
+		_build_ui()
+		_set_status(_reason_to_text(str(result.get("reason", "invalid_selection"))))
+		return
+	_build_ui()
+	_set_status(str(result.get("event", "Continue")))
+
+
+func _on_discard_pressed() -> void:
+	if _is_resolving_turn or _is_auto_merging_draw:
+		return
+	var result := state.discard_selected(selected.values())
+	selected.clear()
+	if not bool(result.get("valid", false)):
+		_build_ui()
+		_set_status(_reason_to_text(str(result.get("reason", "invalid_selection"))))
+		return
+	_build_ui()
+	_set_status(str(result.get("event", "Discarded")))
 
 
 func _on_ultimate_pressed() -> void:
@@ -465,6 +521,10 @@ func _on_rules_pressed() -> void:
 	get_tree().change_scene_to_file("res://src/scenes/rules/rules.tscn")
 
 
+func _on_warlord_dev_pressed() -> void:
+	get_tree().change_scene_to_file(WARLORD_DEV_SCENE)
+
+
 func _on_hits_pressed() -> void:
 	_show_hits_panel()
 
@@ -486,13 +546,13 @@ func _show_hits_panel() -> void:
 	root.add_child(hits_panel)
 	hits_panel.move_to_front()
 
-	_label(hits_panel, "HitsStatsTitle", "HITS", Rect2(10, 8, 160, 16), 12, Color(1.0, 0.86, 0.22))
+	_label(hits_panel, "HitsStatsTitle", "PLAYED PILE", Rect2(10, 8, 160, 16), 12, Color(1.0, 0.86, 0.22))
 	_button(hits_panel, "HitsCloseButton", "X", Rect2(190, 8, 20, 18), _close_hits_panel)
 
 	var totals := _hits_totals()
-	_label(hits_panel, "HitsAttackTotal", "ATK %d" % int(totals.get("damage", 0)), Rect2(12, 30, 62, 14), 8, Color(1.0, 0.42, 0.32))
-	_label(hits_panel, "HitsDefenseTotal", "DEF %d" % int(totals.get("defense", 0)), Rect2(78, 30, 62, 14), 8, Color(0.64, 0.92, 1.0))
-	_label(hits_panel, "HitsMoneyTotal", "$ %d" % int(totals.get("money", 0)), Rect2(144, 30, 62, 14), 8, Color(1.0, 0.86, 0.22))
+	_label(hits_panel, "HitsAttackTotal", "M %d" % int(totals.get("melee", 0)), Rect2(12, 30, 62, 14), 8, Color(1.0, 0.42, 0.32))
+	_label(hits_panel, "HitsDefenseTotal", "R %d" % int(totals.get("ranged", 0)), Rect2(78, 30, 62, 14), 8, Color(1.0, 0.72, 0.32))
+	_label(hits_panel, "HitsArmyDefenseTotal", "D %d" % int(totals.get("army_defense", 0)), Rect2(144, 30, 62, 14), 8, Color(0.64, 0.92, 1.0))
 
 	var rows := _hits_rows()
 	if rows.is_empty():
@@ -504,10 +564,10 @@ func _show_hits_panel() -> void:
 		var y := 54 + i * 16
 		var text := "%s  %s" % [str(row.get("kind", "")), str(row.get("tiles", ""))]
 		_label(hits_panel, "HitsRow_%02d" % i, text, Rect2(12, y, 124, 14), 6, Color.WHITE)
-		_label(hits_panel, "HitsRowValues_%02d" % i, "A%d D%d $%d" % [
-			int(row.get("damage", 0)),
-			int(row.get("defense", 0)),
-			int(row.get("money", 0)),
+		_label(hits_panel, "HitsRowValues_%02d" % i, "M%d R%d D%d" % [
+			int(row.get("melee", 0)),
+			int(row.get("ranged", 0)),
+			int(row.get("army_defense", 0)),
 		], Rect2(138, y, 70, 14), 6, Color(0.78, 0.92, 0.78), HORIZONTAL_ALIGNMENT_RIGHT)
 
 
@@ -544,7 +604,7 @@ func _finish_auto_draw_merge(generation: int) -> void:
 	state.accept_drawn_into_hand()
 	_is_auto_merging_draw = false
 	_build_ui()
-	_set_status("Draw merged into hand. Select 1-3 tiles to play.")
+	_set_status(state.action_prompt())
 
 
 func _animate_draw_into_hand(generation: int) -> void:
@@ -654,31 +714,38 @@ func _hits_rows() -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
 	for play in state.played_sets:
 		var play_id := str(play.get("id", ""))
-		if play_id != "sequence" and play_id != "triplet" and play_id != "scattered":
+		if play_id == "pass":
 			continue
 		var stats := _effect_stats(play.get("effects", []) as Array)
 		var tile_names := play.get("tiles", []) as Array
 		rows.append({
-			"kind": "ARCHIVE" if play_id == "sequence" or play_id == "triplet" else "SCATTER",
+			"kind": "MOVE" if play_id == "sequence" or play_id == "triplet" or play_id == "kan" else "PLAY",
 			"tiles": " ".join(tile_names),
-			"damage": int(stats.get("damage", 0)),
-			"defense": int(stats.get("defense", 0)),
-			"money": int(stats.get("money", 0)),
+			"melee": int(stats.get("melee", 0)),
+			"ranged": int(stats.get("ranged", 0)),
+			"army_defense": int(stats.get("army_defense", 0)),
 		})
 	return rows
 
 
 func _hits_totals() -> Dictionary:
-	var totals := {"damage": 0, "defense": 0, "money": 0}
+	var totals := {"melee": 0, "ranged": 0, "army_defense": 0}
 	for row in _hits_rows():
-		totals["damage"] = int(totals.get("damage", 0)) + int(row.get("damage", 0))
-		totals["defense"] = int(totals.get("defense", 0)) + int(row.get("defense", 0))
-		totals["money"] = int(totals.get("money", 0)) + int(row.get("money", 0))
+		totals["melee"] = int(totals.get("melee", 0)) + int(row.get("melee", 0))
+		totals["ranged"] = int(totals.get("ranged", 0)) + int(row.get("ranged", 0))
+		totals["army_defense"] = int(totals.get("army_defense", 0)) + int(row.get("army_defense", 0))
 	return totals
 
 
+func _played_tile_count() -> int:
+	var total := 0
+	for play in state.played_sets:
+		total += (play.get("tiles", []) as Array).size()
+	return total
+
+
 func _effect_stats(effects: Array) -> Dictionary:
-	var stats := {"damage": 0, "defense": 0, "money": 0}
+	var stats := {"melee": 0, "ranged": 0, "army_defense": 0}
 	for effect in effects:
 		var effect_type := str(effect.get("type", "none"))
 		if not stats.has(effect_type):
@@ -687,21 +754,51 @@ func _effect_stats(effects: Array) -> Dictionary:
 	return stats
 
 
+func _effect_label(play: Dictionary) -> String:
+	var effects := play.get("effects", []) as Array
+	if effects.is_empty():
+		return "No effect"
+	var effect: Dictionary = effects[0]
+	match str(effect.get("type", "none")):
+		"melee":
+			return "M %d" % int(effect.get("value", 0))
+		"ranged":
+			return "R %d" % int(effect.get("value", 0))
+		"army_defense":
+			return "DEF %d" % int(effect.get("value", 0))
+	return "No effect"
+
+
 func _update_hud() -> void:
 	round_value.text = "Turn %d" % state.turn_number
-	player_hp_value.text = "%d" % state.player_hp
-	defense_value.text = "%d" % state.player_defense
-	money_value.text = "$%d" % state.money
-	enemy_hp_value.text = "%d" % state.enemy_hp
+	player_general_hp_value.text = "%d" % state.player_general_hp
+	defense_value.text = "%d" % state.player_army_defense
+	wall_count_value.text = "%d" % state.remaining_deck()
+	enemy_city_defense_value.text = "%d" % state.enemy_city_defense
+	if enemy_army_defense_value != null:
+		enemy_army_defense_value.text = "%d" % state.enemy_army_defense
 	enemy_attack_countdown_value.text = "%d turns" % state.enemy_attack_countdown
 
-	var mirror := find_child("EnemyHpMirrorValue", true, false) as Label
+	var mirror := find_child("EnemyDefenseMirrorValue", true, false) as Label
 	if mirror != null:
-		mirror.text = "HP %d / ATK %d" % [state.enemy_hp, state.enemy_attack]
+		mirror.text = "City %d / Army %d" % [state.enemy_city_defense, state.enemy_army_defense]
 
-	mode_value.text = "Select 1-3 tiles. Single > Pair > Triplet > Sequence. Selected: %d" % selected.size()
-	play_tiles_button.disabled = _is_auto_merging_draw or _is_resolving_turn or state.is_complete or selected.size() < DuelBattleState.MIN_PLAY_PER_TURN or selected.size() > DuelBattleState.MAX_PLAY_PER_TURN
-	ultimate_button.disabled = _is_auto_merging_draw or _is_resolving_turn or state.is_complete or not state.can_ultimate_win()
+	mode_value.text = state.action_prompt()
+	var selection_count := selected.size()
+	var can_discard := not _is_auto_merging_draw and not _is_resolving_turn and not state.is_complete and state.is_discard_required() and selection_count > 0 and selection_count <= state.required_discard_count()
+	var can_deploy := false
+	if not _is_auto_merging_draw and not _is_resolving_turn and not state.is_complete and not state.pending_hu_choice and not state.is_discard_required() and selection_count > 0:
+		var preview := state.preview_play(selected.values())
+		can_deploy = bool(preview.get("valid", false))
+	deploy_arrow_button.visible = can_deploy
+	deploy_arrow_button.disabled = not can_deploy
+	discard_button.visible = state.is_discard_required()
+	discard_button.disabled = not can_discard
+	continue_button.text = "SKIP HU" if state.pending_hu_choice else "PASS"
+	continue_button.disabled = _is_auto_merging_draw or _is_resolving_turn or state.is_complete or state.is_discard_required() or selection_count > 0
+	if played_pile_count_label != null:
+		played_pile_count_label.text = "%d" % _played_tile_count()
+	ultimate_button.disabled = _is_auto_merging_draw or _is_resolving_turn or state.is_complete or not state.pending_hu_choice or not state.can_ultimate_win()
 
 	if state.result == DuelBattleState.BattleResult.WIN:
 		pattern_burst_label.text = "VICTORY"
@@ -709,8 +806,14 @@ func _update_hud() -> void:
 	elif state.result == DuelBattleState.BattleResult.LOSE:
 		pattern_burst_label.text = "DEFEAT"
 		pattern_burst_label.add_theme_color_override("font_color", Color(1.0, 0.32, 0.24))
+	elif state.pending_hu_choice:
+		pattern_burst_label.text = "TOTAL ASSAULT READY"
+		pattern_burst_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.22))
+	elif state.is_discard_required():
+		pattern_burst_label.text = "DISCARD TO 14"
+		pattern_burst_label.add_theme_color_override("font_color", Color(1.0, 0.72, 0.18))
 	elif state.can_ultimate_win():
-		pattern_burst_label.text = "ULTIMATE READY"
+		pattern_burst_label.text = "HU SHAPE"
 		pattern_burst_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.22))
 	else:
 		pattern_burst_label.text = "BUILD MELDS"
@@ -732,6 +835,20 @@ func _reason_to_text(reason: String) -> String:
 			return "Battle is already complete"
 		"play_one_to_three":
 			return "Select 1 to 3 tiles to play"
+		"play_zero_to_three_or_kan":
+			return "Play 0-3 tiles, or 4 identical tiles as Kan"
+		"kan_requires_four_identical":
+			return "Kan needs four identical tiles"
+		"discard_required":
+			return "Discard down to 14 before acting"
+		"discard_count":
+			return "Select the required number of discards"
+		"discard_from_hand":
+			return "Discard from hand tiles"
+		"resolve_hu_choice":
+			return "Choose Assault or Skip Hu"
+		"not_pending_hu":
+			return "Total Assault is only available after a Hu check"
 		"not_a_meld":
 			return "Selected tiles are not a sequence, triplet, or kan"
 		"not_ready":
@@ -789,8 +906,11 @@ func _button(parent: Control, node_name: String, text: String, rect: Rect2, call
 	return button
 
 
-func _panel(parent: Control, node_name: String, rect: Rect2, color: Color) -> Panel:
+func _panel(parent: Control, node_name: String, rect: Rect2, color: Color):
 	rect = _guide_rect(node_name, rect, "panel")
+	# Pure layout mode: transparent placeholders are skipped entirely.
+	if color.a <= 0.001:
+		return null
 	var panel := Panel.new()
 	panel.name = node_name
 	panel.position = rect.position
